@@ -34,7 +34,7 @@ const Login = () => {
       login(formData.username, formData.password),
       {
         loading: 'Signing you in...',
-        success: 'Login Successful! Welcome back, ' + formData.username,
+        success: 'Welcome back, ' + formData.username,
         error: (err) => err.response?.data?.message || 'Invalid username or password',
       },
       {
@@ -43,11 +43,11 @@ const Login = () => {
         },
         success: {
           duration: 4000,
-          icon: 'Success',
+          icon: '✔',
         },
         error: {
           duration: 5000,
-          icon: 'Error',
+          icon: '❌',
         },
       }
     )
