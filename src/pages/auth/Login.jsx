@@ -1,7 +1,8 @@
+// frontend/src/pages/auth/Login.jsx
 import { useState } from 'react';
-import api from '../../services/api.js';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
+import toast from 'react-hot-toast';               // ← Toast
 import '../../styles/Login.css';
 import logo from '../../assets/logo.png'
 
@@ -11,8 +12,7 @@ const Login = () => {
     password: ''
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -22,17 +22,44 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      await login(formData.username, formData.password);
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Invalid username or password');
-    } finally {
-      setLoading(false);
+    if (!formData.username || !formData.password) {
+      toast.error('Please fill in both fields');
+      return;
     }
+
+    setLoading(true);
+
+    // This creates the beautiful loading → success → error flow
+    toast.promise(
+      login(formData.username, formData.password),
+      {
+        loading: 'Signing you in...',
+        success: 'Login Successful! Welcome back, ' + formData.username,
+        error: (err) => err.response?.data?.message || 'Invalid username or password',
+      },
+      {
+        style: {
+          minWidth: '280px',
+        },
+        success: {
+          duration: 4000,
+          icon: 'Success',
+        },
+        error: {
+          duration: 5000,
+          icon: 'Error',
+        },
+      }
+    )
+    .then(() => {
+      navigate('/');           // or '/dashboard'
+    })
+    .catch(() => {
+      // toast.promise already shows error
+    })
+    .finally(() => {
+      setLoading(false);
+    });
   };
 
   return (
@@ -45,8 +72,6 @@ const Login = () => {
           <div className="divider"></div>
 
           <form onSubmit={handleSubmit}>
-            {error && <div className="error-msg">{error}</div>}
-
             <div className="input-group">
               <label>User Name <span className="required">*</span></label>
               <input
@@ -56,6 +81,7 @@ const Login = () => {
                 onChange={handleChange}
                 placeholder="Admin123"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -68,12 +94,13 @@ const Login = () => {
                 onChange={handleChange}
                 placeholder="Enter Your Password"
                 required
+                disabled={loading}
               />
             </div>
 
             <div className="options">
               <label className="checkbox-label">
-                <input type="checkbox" />
+                <input type="checkbox" disabled={loading} />
                 <span>Keep me Logged in</span>
               </label>
               <a href="#" className="forgot-link">Forgot Password?</a>
@@ -89,7 +116,7 @@ const Login = () => {
       {/* Right Side - Branding */}
       <div className="login-branding-section">
         <div className="branding-content">
-          <img src={logo} alt="logo"  id='logo'/>
+          <img src={logo} alt="" />
         </div>
       </div>
     </div>
