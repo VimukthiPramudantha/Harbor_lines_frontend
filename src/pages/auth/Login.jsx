@@ -116,7 +116,7 @@ const Login = () => {
       {/* Right Side - Branding */}
       <div className="login-branding-section">
         <div className="branding-content">
-          <img src={logo} alt="" />
+          <img src={logo} alt="" id='logo'  />
         </div>
       </div>
     </div>
