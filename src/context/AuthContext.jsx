@@ -12,15 +12,12 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // frontend/src/context/AuthContext.jsx   ← only change the useEffect part
 useEffect(() => {
   const loadUser = async () => {
-    // If backend is down, just skip and stay on login – no loop!
     try {
       const res = await api.get('/auth/me');
       setUser(res.data.user);
     } catch (err) {
-      // Silently ignore – user is not logged in
       console.log('No active session or backend offline');
       setUser(null);
     } finally {
@@ -29,7 +26,7 @@ useEffect(() => {
   };
 
   loadUser();
-}, []); // ← still runs only once
+}, []); 
 
   const login = async (username, password) => {
     const res = await api.post('/auth/login', { username, password });
