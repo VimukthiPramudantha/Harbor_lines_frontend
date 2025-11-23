@@ -101,7 +101,7 @@ const Login = () => {
             <div className="options">
               <label className="checkbox-label">
                 <input type="checkbox" disabled={loading} />
-                <span>Keep me Logged in</span>
+                <span>Keep me Logged in</span>Sidebar.jsx
               </label>
               <a href="#" className="forgot-link">Forgot Password?</a>
             </div>

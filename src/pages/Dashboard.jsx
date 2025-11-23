@@ -1,24 +1,26 @@
-import { useAuth } from '../context/AuthContext.jsx';
+import { useState } from 'react';
+import Sidebar from '../components/layout/Sidebar.jsx';
+import Navbar from '../components/layout/Navbar.jsx';
+import { Outlet } from 'react-router-dom';
 
-const Dashboard = () => {
-  const { user, logout } = useAuth();
+const DashboardLayout = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
 
   return (
-    <div style={{padding: '2rem', fontFamily: 'Segoe UI'}}>
-      <h1>Welcome to Harbour Lines</h1>
-      <p>You are logged in as <strong>{user?.username}</strong> ({user?.role})</p>
-      <button onClick={logout} style={{
-        padding: '0.75rem 1.5rem',
-        background: '#dc2626',
-        color: 'white',
-        border: 'none',
-        borderRadius: '8px',
-        cursor: 'pointer'
-      }}>
-        Logout
-      </button>
+    <div className="dashboard-layout">
+      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+      <div className={`main-content ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+        <Navbar toggleSidebar={toggleSidebar} />
+        <div className="page-content">
+          <Outlet /> {/* This renders Dashboard, Jobs, Masters, etc. */}
+        </div>
+      </div>
     </div>
   );
 };
 
-export default Dashboard;
+export default DashboardLayout;
