@@ -1,22 +1,23 @@
-import { useState } from 'react';
-import { useAuth } from '../../context/AuthContext.jsx';
-import toast from 'react-hot-toast';
-import '../../styles/Navbar.css';
+// frontend/src/components/layout/Navbar.jsx
+import { useState } from "react";
+import { useAuth } from "../../context/AuthContext.jsx";
+import toast from "react-hot-toast";
+import "../../styles/Navbar.css";
 
 const Navbar = ({ toggleSidebar }) => {
   const { user, logout } = useAuth();
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState("light");
   const [showProfile, setShowProfile] = useState(false);
 
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
+    const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
+    document.documentElement.setAttribute("data-theme", newTheme);
   };
 
   const handleLogout = () => {
     logout();
-    toast.success('Logged out successfully');
+    toast.success("Logged out successfully");
   };
 
   return (
@@ -27,20 +28,20 @@ const Navbar = ({ toggleSidebar }) => {
         </button>
 
         <div className="search-bar">
-          <span className="material-symbols-rounded search-icon">search</span>
+          <span className="material-symbols-rounded">search</span>
           <input type="text" placeholder="Search or Type ......" />
         </div>
       </div>
 
       <div className="navbar-right">
-        <button className="lang-btn">
+        {/* <button className="lang-btn">
           <span className="material-symbols-rounded">language</span>
-          <span style={{fontSize: '0.9rem', marginLeft: '4px'}}>LKR</span>
-        </button>
+          <span style={{ fontSize: "0.9rem", marginLeft: "4px" }}>LKR</span>
+        </button> */}
 
         <button onClick={toggleTheme} className="theme-toggle">
           <span className="material-symbols-rounded">
-            {theme === 'light' ? 'dark_mode' : 'light_mode'}
+            {theme === "light" ? "dark_mode" : "light_mode"}
           </span>
         </button>
 
@@ -50,12 +51,12 @@ const Navbar = ({ toggleSidebar }) => {
         </button>
 
         <div className="user-profile" onClick={() => setShowProfile(!showProfile)}>
-          <img 
-            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin123" 
-            alt="User" 
-            className="user-avatar" 
+          <img
+            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin123"
+            alt="User"
+            className="user-avatar"
           />
-          <span className="user-name">{user?.username || 'User'}</span>
+          <span className="user-name">{user?.username || "User"}</span>
           <span className="material-symbols-rounded dropdown-arrow">
             keyboard_arrow_down
           </span>

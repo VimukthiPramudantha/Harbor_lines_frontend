@@ -171,7 +171,39 @@
 .material-symbols-rounded {
   font-size: 1.5rem;
 }
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
 
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 1.3rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.search-bar input {
+  padding: 0.75rem 1rem 0.75rem 2.8rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 14px;
+  width: 320px;
+  font-size: 1rem;
+  background: #f8fafc;
+  transition: all 0.2s;
+}
+
+.search-bar input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
 .search-icon {
   position: absolute;
   left: 16px;
