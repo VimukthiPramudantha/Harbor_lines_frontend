@@ -52,7 +52,7 @@ const Login = () => {
       }
     )
     .then(() => {
-      navigate('/');           // or '/dashboard'
+      navigate('/dashboard');           // or '/dashboard'
     })
     .catch(() => {
       // toast.promise already shows error
