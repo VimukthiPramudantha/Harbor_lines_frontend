@@ -10,14 +10,16 @@ const API_BASE = 'http://localhost:5000/api/customersuppliers';
 const CustomerSupplierMaintenance = () => {
   const navigate = useNavigate();
 
-  const handleCancel = () => {
-    toast.success("Cancel successfully");
-    navigate("/dashboard");
-  };
-
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('customer');
   const [loading, setLoading] = useState(false);
+
+  // Edit Mode States
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [allEntries, setAllEntries] = useState([]);
 
   const [formData, setFormData] = useState({
     code: '', name: '', address: '', street: '', city: '', country: '',
@@ -40,6 +42,46 @@ const CustomerSupplierMaintenance = () => {
     localStorage.setItem('sidebarOpen', JSON.stringify(newState));
   };
 
+  const fetchAllEntries = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/getAllCustomerSuppliers`);
+      const data = await res.json();
+      if (data.success) setAllEntries(data.data);
+    } catch (err) {
+      toast.error('Failed to load data');
+    }
+  };
+
+  const openEditModal = async () => {
+    await fetchAllEntries();
+    setShowEditModal(true);
+    setSearchTerm('');
+  };
+
+  const selectForEdit = (entry) => {
+    setFormData({
+      code: entry.code,
+      name: entry.name,
+      address: entry.address || '',
+      street: entry.street || '',
+      city: entry.city || '',
+      country: entry.country || '',
+      telNo: entry.telNo || '',
+      email: entry.email || '',
+      customerType: entry.customerType || '',
+      category: entry.category || '',
+      isConsignee: entry.isConsignee || false,
+      isNotifyParty: entry.isNotifyParty || false,
+      isSupplier: entry.isSupplier || false,
+      isAgent: entry.isAgent || false,
+    });
+    setActiveTab(entry.type);
+    setIsEditMode(true);
+    setEditingId(entry._id);
+    setShowEditModal(false);
+    toast.success(`${entry.type === 'customer' ? 'Customer' : 'Supplier'} loaded for editing`);
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -58,54 +100,63 @@ const CustomerSupplierMaintenance = () => {
 
     setLoading(true);
 
+    const url = isEditMode
+      ? `${API_BASE}/updateCustomerSupplier/${editingId}`
+      : `${API_BASE}/createCustomerSupplier`;
+
+    const method = isEditMode ? 'PUT' : 'POST';
+
     toast.promise(
-      fetch(`${API_BASE}/createCustomerSupplier`, {
-        method: 'POST',
+      fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: activeTab,
-          ...formData
-        })
+        body: JSON.stringify({ type: activeTab, ...formData })
       })
         .then(res => {
-          if (!res.ok) throw new Error('Failed to save');
+          if (!res.ok) throw new Error('Operation failed');
           return res.json();
         })
         .then(data => {
-          if (!data.success) throw new Error(data.message || 'Save failed');
-
-          setFormData({
-            code: '', name: '', address: '', street: '', city: '', country: '',
-            telNo: '', email: '', customerType: '', category: '',
-            isConsignee: false, isNotifyParty: false,
-            isSupplier: false, isAgent: false,
-          });
-
+          if (!data.success) throw new Error(data.message || 'Failed');
+          if (!isEditMode) {
+            setFormData({
+              code: '', name: '', address: '', street: '', city: '', country: '',
+              telNo: '', email: '', customerType: '', category: '',
+              isConsignee: false, isNotifyParty: false,
+              isSupplier: false, isAgent: false,
+            });
+          }
+          setIsEditMode(false);
+          setEditingId(null);
           return data;
         }),
       {
-        loading: 'Saving your data...',
-        success: `${activeTab === 'customer' ? 'Customer' : 'Supplier'} saved successfully!`,
-        error: (err) => err.message || 'Failed to save. Please try again.',
-      },
-      {
-        style: {
-          minWidth: '300px',
-          fontSize: '1rem',
-        },
-        success: {
-          duration: 4000,
-          icon: 'Saved',
-        },
-        error: {
-          duration: 5000,
-          icon: 'Error',
-        },
+        loading: isEditMode ? 'Updating...' : 'Saving...',
+        success: isEditMode
+          ? `${activeTab === 'customer' ? 'Customer' : 'Supplier'} updated successfully!`
+          : `${activeTab === 'customer' ? 'Customer' : 'Supplier'} saved successfully!`,
+        error: (err) => err.message || 'Operation failed',
       }
-    ).finally(() => {
-      setLoading(false);
-    });
+    ).finally(() => setLoading(false));
   };
+
+  const handleCancel = () => {
+    setFormData({
+      code: '', name: '', address: '', street: '', city: '', country: '',
+      telNo: '', email: '', customerType: '', category: '',
+      isConsignee: false, isNotifyParty: false,
+      isSupplier: false, isAgent: false,
+    });
+    setIsEditMode(false);
+    setEditingId(null);
+    toast.success("Form cleared");
+  };
+
+  const filtered = allEntries.filter(e =>
+    e.type === activeTab &&
+    (e.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+     e.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   return (
     <div className="dashboard-layout">
@@ -123,64 +174,49 @@ const CustomerSupplierMaintenance = () => {
 
             <div className="maintenance-card">
               <div className="modern-tabs">
-                <button
-                  className={`tab-btn ${activeTab === 'customer' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('customer')}
-                >
-                  <span className="material-symbols-rounded">person</span>
-                  Customer
+                <button className={`tab-btn ${activeTab === 'customer' ? 'active' : ''}`} onClick={() => setActiveTab('customer')}>
+                  <span className="material-symbols-rounded">person</span> Customer
                 </button>
-                <button
-                  className={`tab-btn ${activeTab === 'supplier' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('supplier')}
-                >
-                  <span className="material-symbols-rounded">local_shipping</span>
-                  Supplier
+                <button className={`tab-btn ${activeTab === 'supplier' ? 'active' : ''}`} onClick={() => setActiveTab('supplier')}>
+                  <span className="material-symbols-rounded">local_shipping</span> Supplier
                 </button>
               </div>
 
               <form onSubmit={handleSubmit} className="modern-form">
+                {/* === ALL YOUR EXISTING FORM FIELDS (UNCHANGED) === */}
                 <div className="form-grid">
                   <div className="input-group">
                     <label>Code <span className="required">*</span></label>
                     <input type="text" name="code" value={formData.code} onChange={handleChange} required disabled={loading} />
                   </div>
-
                   <div className="input-group">
                     <label>Name <span className="required">*</span></label>
                     <input type="text" name="name" value={formData.name} onChange={handleChange} required disabled={loading} />
                   </div>
-
                   <div className="input-group full">
                     <label>Address</label>
                     <input type="text" name="address" value={formData.address} onChange={handleChange} disabled={loading} />
                   </div>
-
                   <div className="input-group">
                     <label>Street</label>
                     <input type="text" name="street" value={formData.street} onChange={handleChange} disabled={loading} />
                   </div>
-
                   <div className="input-group">
                     <label>City</label>
                     <input type="text" name="city" value={formData.city} onChange={handleChange} disabled={loading} />
                   </div>
-
                   <div className="input-group">
                     <label>Country</label>
                     <input type="text" name="country" value={formData.country} onChange={handleChange} disabled={loading} />
                   </div>
-
                   <div className="input-group">
                     <label>Tel No.</label>
                     <input type="tel" name="telNo" value={formData.telNo} onChange={handleChange} disabled={loading} />
                   </div>
-
                   <div className="input-group">
                     <label>Email Address</label>
                     <input type="email" name="email" value={formData.email} onChange={handleChange} disabled={loading} />
                   </div>
-
                   <div className="input-group">
                     <label>Customer Type</label>
                     <select name="customerType" value={formData.customerType} onChange={handleChange} disabled={loading}>
@@ -188,7 +224,6 @@ const CustomerSupplierMaintenance = () => {
                       {customerTypes.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </div>
-
                   <div className="input-group">
                     <label>Category</label>
                     <select name="category" value={formData.category} onChange={handleChange} disabled={loading}>
@@ -203,60 +238,93 @@ const CustomerSupplierMaintenance = () => {
                     <>
                       <label className="checkbox-item">
                         <input type="checkbox" name="isConsignee" checked={formData.isConsignee} onChange={handleChange} disabled={loading} />
-                        <span className="checkmark"></span>
-                        Consignee
+                        <span className="checkmark"></span> Consignee
                       </label>
                       <label className="checkbox-item">
                         <input type="checkbox" name="isNotifyParty" checked={formData.isNotifyParty} onChange={handleChange} disabled={loading} />
-                        <span className="checkmark"></span>
-                        Notify Party
+                        <span className="checkmark"></span> Notify Party
                       </label>
                     </>
                   ) : (
                     <>
                       <label className="checkbox-item">
                         <input type="checkbox" name="isSupplier" checked={formData.isSupplier} onChange={handleChange} disabled={loading} />
-                        <span className="checkmark"></span>
-                        Supplier
+                        <span className="checkmark"></span> Supplier
                       </label>
                       <label className="checkbox-item">
                         <input type="checkbox" name="isAgent" checked={formData.isAgent} onChange={handleChange} disabled={loading} />
-                        <span className="checkmark"></span>
-                        Origin/Destination Agent
+                        <span className="checkmark"></span> Origin/Destination Agent
                       </label>
                     </>
                   )}
                 </div>
 
                 <div className="form-actions">
+                  <button type="button" className="btn-edit" onClick={openEditModal}>
+                    <span className="material-symbols-rounded">edit</span>
+                    Edit Existing
+                  </button>
+
+               <div style={{ flex: 1, minWidth: '20px' }}></div>
+
                   <button type="submit" className="btn-primary" disabled={loading}>
-                    {loading ? (
-                      <>Saving...</>
-                    ) : (
+                    {loading ? 'Saving...' : (
                       <>
                         <span className="material-symbols-rounded">save</span>
-                        Save {activeTab === 'customer' ? 'Customer' : 'Supplier'}
+                        {isEditMode
+                          ? `Update ${activeTab === 'customer' ? 'Customer' : 'Supplier'}`
+                          : `Save ${activeTab === 'customer' ? 'Customer' : 'Supplier'}`
+                        }
                       </>
                     )}
                   </button>
 
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    disabled={loading}
-                    onClick={handleCancel}
-                  >
+                  <button type="button" className="btn-secondary" onClick={handleCancel} disabled={loading}>
                     <span className="material-symbols-rounded">close</span>
                     Cancel
                   </button>
                 </div>
-
               </form>
             </div>
           </div>
         </div>
-
       </div>
+
+      {showEditModal && (
+        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Select {activeTab === 'customer' ? 'Customer' : 'Supplier'} to Edit</h2>
+              <button className="close-btn" onClick={() => setShowEditModal(false)}>×</button>
+            </div>
+
+            <div className="modal-search">
+              <input
+                type="text"
+                placeholder="Search by Code or Name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                autoFocus
+              />
+            </div>
+
+            <div className="modal-list">
+              {filtered.length === 0 ? (
+                <p className="no-data">No {activeTab}s found</p>
+              ) : (
+                filtered.map(entry => (
+                  <div key={entry._id} className="list-item" onClick={() => selectForEdit(entry)}>
+                    <div>
+                      <strong>{entry.code}</strong> - {entry.name}
+                    </div>
+                    <span className="material-symbols-rounded">arrow_forward_ios</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
