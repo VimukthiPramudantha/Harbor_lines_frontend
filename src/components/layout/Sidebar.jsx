@@ -12,7 +12,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { name: 'Import Jobs',    icon: 'input',            path: '/jobs/import' },
     { name: 'Export Jobs',    icon: 'output',           path: '/jobs/export' },
     { name: 'Masters',        icon: 'folder_open',      path: '/masters' },
-    { name: 'Customers',      icon: 'people',           path: '/masters/customers' },
+    // { name: 'Customers',      icon: 'people',           path: '/masters/customers' },
     { name: 'Reports',        icon: 'bar_chart',        path: '/reports' },
     { name: 'Users',          icon: 'manage_accounts',  path: '/users' },
     { name: 'Settings',       icon: 'settings',         path: '/settings' },
