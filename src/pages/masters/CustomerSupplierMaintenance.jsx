@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Sidebar from '../../components/layout/Sidebar.jsx';
 import Navbar from '../../components/layout/Navbar.jsx';
@@ -7,6 +8,13 @@ import '../../styles/CustomerSupplier.css';
 const API_BASE = 'http://localhost:5000/api/customersuppliers';
 
 const CustomerSupplierMaintenance = () => {
+  const navigate = useNavigate();
+
+  const handleCancel = () => {
+    toast.success("Cancel successfully");
+    navigate("/dashboard");
+  };
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('customer');
   const [loading, setLoading] = useState(false);
@@ -50,7 +58,6 @@ const CustomerSupplierMaintenance = () => {
 
     setLoading(true);
 
-    // Beautiful toast promise — just like Login.jsx
     toast.promise(
       fetch(`${API_BASE}/createCustomerSupplier`, {
         method: 'POST',
@@ -60,21 +67,22 @@ const CustomerSupplierMaintenance = () => {
           ...formData
         })
       })
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to save');
-        return res.json();
-      })
-      .then(data => {
-        if (!data.success) throw new Error(data.message || 'Save failed');
-        // Reset form on success
-        setFormData({
-          code: '', name: '', address: '', street: '', city: '', country: '',
-          telNo: '', email: '', customerType: '', category: '',
-          isConsignee: false, isNotifyParty: false,
-          isSupplier: false, isAgent: false,
-        });
-        return data;
-      }),
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to save');
+          return res.json();
+        })
+        .then(data => {
+          if (!data.success) throw new Error(data.message || 'Save failed');
+
+          setFormData({
+            code: '', name: '', address: '', street: '', city: '', country: '',
+            telNo: '', email: '', customerType: '', category: '',
+            isConsignee: false, isNotifyParty: false,
+            isSupplier: false, isAgent: false,
+          });
+
+          return data;
+        }),
       {
         loading: 'Saving your data...',
         success: `${activeTab === 'customer' ? 'Customer' : 'Supplier'} saved successfully!`,
@@ -94,8 +102,7 @@ const CustomerSupplierMaintenance = () => {
           icon: 'Error',
         },
       }
-    )
-    .finally(() => {
+    ).finally(() => {
       setLoading(false);
     });
   };
@@ -138,6 +145,7 @@ const CustomerSupplierMaintenance = () => {
                     <label>Code <span className="required">*</span></label>
                     <input type="text" name="code" value={formData.code} onChange={handleChange} required disabled={loading} />
                   </div>
+
                   <div className="input-group">
                     <label>Name <span className="required">*</span></label>
                     <input type="text" name="name" value={formData.name} onChange={handleChange} required disabled={loading} />
@@ -152,10 +160,12 @@ const CustomerSupplierMaintenance = () => {
                     <label>Street</label>
                     <input type="text" name="street" value={formData.street} onChange={handleChange} disabled={loading} />
                   </div>
+
                   <div className="input-group">
                     <label>City</label>
                     <input type="text" name="city" value={formData.city} onChange={handleChange} disabled={loading} />
                   </div>
+
                   <div className="input-group">
                     <label>Country</label>
                     <input type="text" name="country" value={formData.country} onChange={handleChange} disabled={loading} />
@@ -165,6 +175,7 @@ const CustomerSupplierMaintenance = () => {
                     <label>Tel No.</label>
                     <input type="tel" name="telNo" value={formData.telNo} onChange={handleChange} disabled={loading} />
                   </div>
+
                   <div className="input-group">
                     <label>Email Address</label>
                     <input type="email" name="email" value={formData.email} onChange={handleChange} disabled={loading} />
@@ -228,15 +239,23 @@ const CustomerSupplierMaintenance = () => {
                       </>
                     )}
                   </button>
-                  <button type="button" className="btn-secondary" disabled={loading}>
+
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    disabled={loading}
+                    onClick={handleCancel}
+                  >
                     <span className="material-symbols-rounded">close</span>
                     Cancel
                   </button>
                 </div>
+
               </form>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
