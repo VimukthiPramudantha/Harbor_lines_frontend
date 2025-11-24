@@ -1,9 +1,10 @@
 // frontend/src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/auth/Login.jsx';
-import Dashboard from './pages/Dashboard.jsx'; // we'll create this in 30 seconds
+import Dashboard from './pages/Dashboard.jsx'; 
 import { useAuth } from './context/AuthContext.jsx';
 import CustomerSupplierMaintenance from './pages/masters/CustomerSupplierMaintenance.jsx'
+import CurrencyMaintenance from './pages/masters/CurrencyMaintenance.jsx'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -25,6 +26,7 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path="/masters/customers" element={<CustomerSupplierMaintenance />} />
+        <Route path="/masters/currency" element={<CurrencyMaintenance />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

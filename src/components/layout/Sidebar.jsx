@@ -1,39 +1,41 @@
 // frontend/src/components/layout/Sidebar.jsx
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import '../../styles/Sidebar.css';
 import logo from '../../assets/headerLogo.png';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const sidebarRef = useRef(null);
+  const [mastersOpen, setMastersOpen] = useState(false);
 
   const menuItems = [
-    { name: 'Dashboard',      icon: 'dashboard',        path: '/dashboard' },
-    { name: 'Import Jobs',    icon: 'input',            path: '/jobs/import' },
-    { name: 'Export Jobs',    icon: 'output',           path: '/jobs/export' },
-    { name: 'Masters',        icon: 'folder_open',      path: '/masters/customers' },
-    // { name: 'Customers',      icon: 'people',           path: '/masters/customers' },
-    { name: 'Reports',        icon: 'bar_chart',        path: '/reports' },
-    { name: 'Users',          icon: 'manage_accounts',  path: '/users' },
-    { name: 'Settings',       icon: 'settings',         path: '/settings' },
+    { name: 'Dashboard',     icon: 'dashboard',       path: '/dashboard' },
+    { name: 'Import Jobs',   icon: 'input',           path: '/jobs/import' },
+    { name: 'Export Jobs',   icon: 'output',          path: '/jobs/export' },
+    {
+      name: 'Master Files',
+      icon: 'folder_open',
+      isDropdown: true,
+      isOpen: mastersOpen,
+      onToggle: () => setMastersOpen(!mastersOpen),
+      subItems: [
+        { name: 'Customer / Supplier', path: '/masters/customers', icon: 'people' },
+        { name: 'Currency',           path: '/masters/currency',  icon: 'currency_exchange' },
+      ]
+    },
+    { name: 'Reports',       icon: 'bar_chart',       path: '/reports' },
+    { name: 'Users',         icon: 'manage_accounts', path: '/users' },
+    { name: 'Settings',      icon: 'settings',        path: '/settings' },
   ];
 
-  // Close sidebar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        isOpen &&
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target)
-      ) {
-        // Don't close if clicking the navbar menu button
+      if (isOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
         const menuBtn = document.querySelector('.menu-btn');
         if (menuBtn && menuBtn.contains(event.target)) return;
-
-        toggleSidebar(); // This will close it
+        toggleSidebar();
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, toggleSidebar]);
@@ -49,15 +51,50 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
       <nav className="sidebar-nav">
         {menuItems.map((item) => (
-          <NavLink
-            key={item.name}
-            to={item.path}
-            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-            onClick={() => window.innerWidth < 1024 && toggleSidebar()} // Auto-close on mobile after click
-          >
-            <span className="material-symbols-rounded nav-icon">{item.icon}</span>
-            {isOpen && <span className="nav-text">{item.name}</span>}
-          </NavLink>
+          <div key={item.name}>
+            {item.isDropdown ? (
+              <div
+                className={`nav-item dropdown ${item.isOpen ? 'open' : ''}`}
+                onClick={item.onToggle}
+              >
+                <span className="material-symbols-rounded nav-icon">{item.icon}</span>
+                {isOpen && (
+                  <>
+                    <span className="nav-text">{item.name}</span>
+                    <span className="material-symbols-rounded dropdown-arrow">
+                      {item.isOpen ? 'expand_less' : 'expand_more'}
+                    </span>
+                  </>
+                )}
+              </div>
+            ) : (
+              <NavLink
+                to={item.path}
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={() => window.innerWidth < 1024 && toggleSidebar()}
+              >
+                <span className="material-symbols-rounded nav-icon">{item.icon}</span>
+                {isOpen && <span className="nav-text">{item.name}</span>}
+              </NavLink>
+            )}
+
+            {/* Submenu */}
+            {item.isDropdown && item.isOpen && isOpen && (
+              <div className="submenu">
+                {item.subItems.map((sub) => (
+                  <NavLink
+                    key={sub.name}
+                    to={sub.path}
+                    className={({ isActive }) => `submenu-item ${isActive ? 'active' : ''}`}
+                    onClick={() => window.innerWidth < 1024 && toggleSidebar()}
+                  >
+                    <span className="material-symbols-rounded submenu-icon">{sub.icon}</span>
+                    <span className="submenu-text">{sub.name}</span>
+                  </NavLink>
+                ))}
+              </div>
+            )}
+          </div>
         ))}
       </nav>
 
