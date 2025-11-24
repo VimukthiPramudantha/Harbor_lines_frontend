@@ -58,3 +58,25 @@
   color: #64748b;
   font-size: 1.1rem;
 }
+/* Edit Button */
+.btn-edit {
+  background: #10b981;
+  color: white;
+  padding: 1rem 1.8rem;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-edit:hover {
+  background: #059669;
+}
+
+.modal-overlay, .modal-content, .modal-header, .close-btn,
+.modal-search, .modal-list, .list-item, .no-data {
+  /* Same as CustomerSupplier.css modal styles */
+}
