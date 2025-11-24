@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import Sidebar from '../../components/layout/Sidebar.jsx';
 import Navbar from '../../components/layout/Navbar.jsx';
 import '../../styles/CustomerSupplier.css';
 
+const API_BASE = 'http://localhost:5000/api/customersuppliers';
+
 const CustomerSupplierMaintenance = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('customer');
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     code: '', name: '', address: '', street: '', city: '', country: '',
@@ -17,12 +21,9 @@ const CustomerSupplierMaintenance = () => {
   const customerTypes = ['Boi', 'Foreing', 'General', 'Local', 'Principle 01', 'Principle 02', 'Principle 03', 'Trico'];
   const categories = ['Normal', 'Bad Outstanding'];
 
-  // Load sidebar state from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('sidebarOpen');
-    if (saved !== null) {
-      setSidebarOpen(JSON.parse(saved));
-    }
+    if (saved !== null) setSidebarOpen(JSON.parse(saved));
   }, []);
 
   const toggleSidebar = () => {
@@ -39,23 +40,73 @@ const CustomerSupplierMaintenance = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(`${activeTab === 'customer' ? 'Customer' : 'Supplier'} saved successfully!`);
-    console.log('Saved:', { type: activeTab, ...formData });
+
+    if (!formData.code || !formData.name) {
+      toast.error('Code and Name are required!');
+      return;
+    }
+
+    setLoading(true);
+
+    // Beautiful toast promise — just like Login.jsx
+    toast.promise(
+      fetch(`${API_BASE}/createCustomerSupplier`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: activeTab,
+          ...formData
+        })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to save');
+        return res.json();
+      })
+      .then(data => {
+        if (!data.success) throw new Error(data.message || 'Save failed');
+        // Reset form on success
+        setFormData({
+          code: '', name: '', address: '', street: '', city: '', country: '',
+          telNo: '', email: '', customerType: '', category: '',
+          isConsignee: false, isNotifyParty: false,
+          isSupplier: false, isAgent: false,
+        });
+        return data;
+      }),
+      {
+        loading: 'Saving your data...',
+        success: `${activeTab === 'customer' ? 'Customer' : 'Supplier'} saved successfully!`,
+        error: (err) => err.message || 'Failed to save. Please try again.',
+      },
+      {
+        style: {
+          minWidth: '300px',
+          fontSize: '1rem',
+        },
+        success: {
+          duration: 4000,
+          icon: 'Saved',
+        },
+        error: {
+          duration: 5000,
+          icon: 'Error',
+        },
+      }
+    )
+    .finally(() => {
+      setLoading(false);
+    });
   };
 
   return (
     <div className="dashboard-layout">
-      {/* Sidebar */}
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
 
-      {/* Main Content */}
       <div className={`main-content ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-        {/* Navbar */}
         <Navbar toggleSidebar={toggleSidebar} />
 
-        {/* Page Content */}
         <div className="page-content">
           <div className="page-wrapper">
             <div className="page-header">
@@ -64,7 +115,6 @@ const CustomerSupplierMaintenance = () => {
             </div>
 
             <div className="maintenance-card">
-              {/* Modern Tabs with Icons */}
               <div className="modern-tabs">
                 <button
                   className={`tab-btn ${activeTab === 'customer' ? 'active' : ''}`}
@@ -86,47 +136,43 @@ const CustomerSupplierMaintenance = () => {
                 <div className="form-grid">
                   <div className="input-group">
                     <label>Code <span className="required">*</span></label>
-                    <input type="text" name="code" value={formData.code} onChange={handleChange} required />
+                    <input type="text" name="code" value={formData.code} onChange={handleChange} required disabled={loading} />
                   </div>
-
                   <div className="input-group">
                     <label>Name <span className="required">*</span></label>
-                    <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+                    <input type="text" name="name" value={formData.name} onChange={handleChange} required disabled={loading} />
                   </div>
 
                   <div className="input-group full">
                     <label>Address</label>
-                    <input type="text" name="address" value={formData.address} onChange={handleChange} />
+                    <input type="text" name="address" value={formData.address} onChange={handleChange} disabled={loading} />
                   </div>
 
                   <div className="input-group">
                     <label>Street</label>
-                    <input type="text" name="street" value={formData.street} onChange={handleChange} />
+                    <input type="text" name="street" value={formData.street} onChange={handleChange} disabled={loading} />
                   </div>
-
                   <div className="input-group">
                     <label>City</label>
-                    <input type="text" name="city" value={formData.city} onChange={handleChange} />
+                    <input type="text" name="city" value={formData.city} onChange={handleChange} disabled={loading} />
                   </div>
-
                   <div className="input-group">
                     <label>Country</label>
-                    <input type="text" name="country" value={formData.country} onChange={handleChange} />
+                    <input type="text" name="country" value={formData.country} onChange={handleChange} disabled={loading} />
                   </div>
 
                   <div className="input-group">
                     <label>Tel No.</label>
-                    <input type="tel" name="telNo" value={formData.telNo} onChange={handleChange} />
+                    <input type="tel" name="telNo" value={formData.telNo} onChange={handleChange} disabled={loading} />
                   </div>
-
                   <div className="input-group">
                     <label>Email Address</label>
-                    <input type="email" name="email" value={formData.email} onChange={handleChange} />
+                    <input type="email" name="email" value={formData.email} onChange={handleChange} disabled={loading} />
                   </div>
 
                   <div className="input-group">
                     <label>Customer Type</label>
-                    <select name="customerType" value={formData.customerType} onChange={handleChange}>
+                    <select name="customerType" value={formData.customerType} onChange={handleChange} disabled={loading}>
                       <option value="">Select Type</option>
                       {customerTypes.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
@@ -134,24 +180,23 @@ const CustomerSupplierMaintenance = () => {
 
                   <div className="input-group">
                     <label>Category</label>
-                    <select name="category" value={formData.category} onChange={handleChange}>
+                    <select name="category" value={formData.category} onChange={handleChange} disabled={loading}>
                       <option value="">Select Category</option>
                       {categories.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
                 </div>
 
-                {/* Beautiful Checkboxes */}
                 <div className="checkbox-grid">
                   {activeTab === 'customer' ? (
                     <>
                       <label className="checkbox-item">
-                        <input type="checkbox" name="isConsignee" checked={formData.isConsignee} onChange={handleChange} />
+                        <input type="checkbox" name="isConsignee" checked={formData.isConsignee} onChange={handleChange} disabled={loading} />
                         <span className="checkmark"></span>
                         Consignee
                       </label>
                       <label className="checkbox-item">
-                        <input type="checkbox" name="isNotifyParty" checked={formData.isNotifyParty} onChange={handleChange} />
+                        <input type="checkbox" name="isNotifyParty" checked={formData.isNotifyParty} onChange={handleChange} disabled={loading} />
                         <span className="checkmark"></span>
                         Notify Party
                       </label>
@@ -159,12 +204,12 @@ const CustomerSupplierMaintenance = () => {
                   ) : (
                     <>
                       <label className="checkbox-item">
-                        <input type="checkbox" name="isSupplier" checked={formData.isSupplier} onChange={handleChange} />
+                        <input type="checkbox" name="isSupplier" checked={formData.isSupplier} onChange={handleChange} disabled={loading} />
                         <span className="checkmark"></span>
                         Supplier
                       </label>
                       <label className="checkbox-item">
-                        <input type="checkbox" name="isAgent" checked={formData.isAgent} onChange={handleChange} />
+                        <input type="checkbox" name="isAgent" checked={formData.isAgent} onChange={handleChange} disabled={loading} />
                         <span className="checkmark"></span>
                         Origin/Destination Agent
                       </label>
@@ -173,11 +218,17 @@ const CustomerSupplierMaintenance = () => {
                 </div>
 
                 <div className="form-actions">
-                  <button type="submit" className="btn-primary">
-                    <span className="material-symbols-rounded">save</span>
-                    Save {activeTab === 'customer' ? 'Customer' : 'Supplier'}
+                  <button type="submit" className="btn-primary" disabled={loading}>
+                    {loading ? (
+                      <>Saving...</>
+                    ) : (
+                      <>
+                        <span className="material-symbols-rounded">save</span>
+                        Save {activeTab === 'customer' ? 'Customer' : 'Supplier'}
+                      </>
+                    )}
                   </button>
-                  <button type="button" className="btn-secondary">
+                  <button type="button" className="btn-secondary" disabled={loading}>
                     <span className="material-symbols-rounded">close</span>
                     Cancel
                   </button>
