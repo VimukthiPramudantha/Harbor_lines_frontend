@@ -8,10 +8,10 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const sidebarRef = useRef(null);
 
   const menuItems = [
-    { name: 'Dashboard',      icon: 'dashboard',        path: '/' },
+    { name: 'Dashboard',      icon: 'dashboard',        path: '/dashboard' },
     { name: 'Import Jobs',    icon: 'input',            path: '/jobs/import' },
     { name: 'Export Jobs',    icon: 'output',           path: '/jobs/export' },
-    { name: 'Masters',        icon: 'folder_open',      path: '/masters' },
+    { name: 'Masters',        icon: 'folder_open',      path: '/masters/customers' },
     // { name: 'Customers',      icon: 'people',           path: '/masters/customers' },
     { name: 'Reports',        icon: 'bar_chart',        path: '/reports' },
     { name: 'Users',          icon: 'manage_accounts',  path: '/users' },
