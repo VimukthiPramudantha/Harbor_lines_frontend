@@ -1,12 +1,11 @@
-// frontend/src/components/layout/Sidebar.jsx
 import { useEffect, useRef, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom'; // ← Added useLocation
+import { NavLink, useLocation } from 'react-router-dom';
 import '../../styles/Sidebar.css';
 import logo from '../../assets/headerLogo.png';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const sidebarRef = useRef(null);
-  const location = useLocation(); // ← To detect current path
+  const location = useLocation(); 
   const [mastersOpen, setMastersOpen] = useState(false);
 
   const menuItems = [
@@ -29,7 +28,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { name: 'Settings',      icon: 'settings',        path: '/settings' },
   ];
 
-  // Auto-expand Master Files if we're inside any sub-page
   useEffect(() => {
     if (location.pathname.startsWith('/masters/')) {
       setMastersOpen(true);
@@ -48,7 +46,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, toggleSidebar]);
 
-  // Check if current path belongs to Master Files group
   const isMasterFilesActive = location.pathname.startsWith('/masters/');
 
   return (
@@ -91,7 +88,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               </NavLink>
             )}
 
-            {/* Submenu */}
             {item.isDropdown && item.isOpen && isOpen && (
               <div className="submenu">
                 {item.subItems.map((sub) => (
