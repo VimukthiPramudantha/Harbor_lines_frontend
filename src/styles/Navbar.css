@@ -58,7 +58,7 @@
 }
 
 .search-bar::before {
-  content: 'Search';
+  /* content: 'Search'; */
   position: absolute;
   left: 16px;
   top: 50%;
