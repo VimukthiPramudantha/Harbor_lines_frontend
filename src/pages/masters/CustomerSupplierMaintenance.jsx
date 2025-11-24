@@ -7,6 +7,13 @@ import '../../styles/CustomerSupplier.css';
 
 const API_BASE = 'http://localhost:5000/api/customersuppliers';
 
+const emptyForm = {
+  code: '', name: '', address: '', street: '', city: '', country: '',
+  telNo: '', email: '', customerType: '', category: '',
+  isConsignee: false, isNotifyParty: false,
+  isSupplier: false, isAgent: false,
+};
+
 const CustomerSupplierMaintenance = () => {
   const navigate = useNavigate();
 
@@ -14,19 +21,16 @@ const CustomerSupplierMaintenance = () => {
   const [activeTab, setActiveTab] = useState('customer');
   const [loading, setLoading] = useState(false);
 
-  // Edit Mode States
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [allEntries, setAllEntries] = useState([]);
 
-  const [formData, setFormData] = useState({
-    code: '', name: '', address: '', street: '', city: '', country: '',
-    telNo: '', email: '', customerType: '', category: '',
-    isConsignee: false, isNotifyParty: false,
-    isSupplier: false, isAgent: false,
-  });
+  const [formData, setFormData] = useState(emptyForm);
+
+  // --- Cancel Logic: first clears, second redirects ---
+  const [hasClearedOnce, setHasClearedOnce] = useState(false);
 
   const customerTypes = ['Boi', 'Foreing', 'General', 'Local', 'Principle 01', 'Principle 02', 'Principle 03', 'Trico'];
   const categories = ['Normal', 'Bad Outstanding'];
@@ -75,10 +79,13 @@ const CustomerSupplierMaintenance = () => {
       isSupplier: entry.isSupplier || false,
       isAgent: entry.isAgent || false,
     });
+
     setActiveTab(entry.type);
     setIsEditMode(true);
     setEditingId(entry._id);
     setShowEditModal(false);
+    setHasClearedOnce(false);
+
     toast.success(`${entry.type === 'customer' ? 'Customer' : 'Supplier'} loaded for editing`);
   };
 
@@ -118,16 +125,13 @@ const CustomerSupplierMaintenance = () => {
         })
         .then(data => {
           if (!data.success) throw new Error(data.message || 'Failed');
-          if (!isEditMode) {
-            setFormData({
-              code: '', name: '', address: '', street: '', city: '', country: '',
-              telNo: '', email: '', customerType: '', category: '',
-              isConsignee: false, isNotifyParty: false,
-              isSupplier: false, isAgent: false,
-            });
-          }
+
+          // After save or update → reset
+          setFormData(emptyForm);
           setIsEditMode(false);
           setEditingId(null);
+          setHasClearedOnce(false);
+
           return data;
         }),
       {
@@ -140,22 +144,30 @@ const CustomerSupplierMaintenance = () => {
     ).finally(() => setLoading(false));
   };
 
+  // ============================
+  // CANCEL BUTTON LOGIC
+  // ============================
   const handleCancel = () => {
-    setFormData({
-      code: '', name: '', address: '', street: '', city: '', country: '',
-      telNo: '', email: '', customerType: '', category: '',
-      isConsignee: false, isNotifyParty: false,
-      isSupplier: false, isAgent: false,
-    });
-    setIsEditMode(false);
-    setEditingId(null);
-    toast.success("Form cleared");
+    if (!hasClearedOnce && Object.values(formData).some(v => v !== '' && v !== false)) {
+      // First click → clear form
+      setFormData(emptyForm);
+      setIsEditMode(false);
+      setEditingId(null);
+      setHasClearedOnce(true);
+
+      toast.success("Form cleared");
+      return;
+    }
+
+    // Second click → redirect
+    toast.success("Cancelled");
+    navigate("/dashboard");
   };
 
   const filtered = allEntries.filter(e =>
     e.type === activeTab &&
     (e.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     e.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      e.name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -174,49 +186,65 @@ const CustomerSupplierMaintenance = () => {
 
             <div className="maintenance-card">
               <div className="modern-tabs">
-                <button className={`tab-btn ${activeTab === 'customer' ? 'active' : ''}`} onClick={() => setActiveTab('customer')}>
-                  <span className="material-symbols-rounded">person</span> Customer
+                <button
+                  className={`tab-btn ${activeTab === 'customer' ? 'active' : ''}`}
+                  onClick={() => { setActiveTab('customer'); setHasClearedOnce(false); }}
+                >
+                  <span className="material-symbols-rounded">person</span>
+                  Customer
                 </button>
-                <button className={`tab-btn ${activeTab === 'supplier' ? 'active' : ''}`} onClick={() => setActiveTab('supplier')}>
-                  <span className="material-symbols-rounded">local_shipping</span> Supplier
+
+                <button
+                  className={`tab-btn ${activeTab === 'supplier' ? 'active' : ''}`}
+                  onClick={() => { setActiveTab('supplier'); setHasClearedOnce(false); }}
+                >
+                  <span className="material-symbols-rounded">local_shipping</span>
+                  Supplier
                 </button>
               </div>
 
               <form onSubmit={handleSubmit} className="modern-form">
-                {/* === ALL YOUR EXISTING FORM FIELDS (UNCHANGED) === */}
                 <div className="form-grid">
                   <div className="input-group">
-                    <label>Code <span className="required">*</span></label>
+                    <label>Code *</label>
                     <input type="text" name="code" value={formData.code} onChange={handleChange} required disabled={loading} />
                   </div>
+
                   <div className="input-group">
-                    <label>Name <span className="required">*</span></label>
+                    <label>Name *</label>
                     <input type="text" name="name" value={formData.name} onChange={handleChange} required disabled={loading} />
                   </div>
+
                   <div className="input-group full">
                     <label>Address</label>
                     <input type="text" name="address" value={formData.address} onChange={handleChange} disabled={loading} />
                   </div>
+
                   <div className="input-group">
                     <label>Street</label>
                     <input type="text" name="street" value={formData.street} onChange={handleChange} disabled={loading} />
                   </div>
+
                   <div className="input-group">
                     <label>City</label>
                     <input type="text" name="city" value={formData.city} onChange={handleChange} disabled={loading} />
                   </div>
+
                   <div className="input-group">
                     <label>Country</label>
                     <input type="text" name="country" value={formData.country} onChange={handleChange} disabled={loading} />
                   </div>
+
                   <div className="input-group">
                     <label>Tel No.</label>
                     <input type="tel" name="telNo" value={formData.telNo} onChange={handleChange} disabled={loading} />
                   </div>
+
                   <div className="input-group">
-                    <label>Email Address</label>
+                    <label>Email</label>
                     <input type="email" name="email" value={formData.email} onChange={handleChange} disabled={loading} />
                   </div>
+
                   <div className="input-group">
                     <label>Customer Type</label>
                     <select name="customerType" value={formData.customerType} onChange={handleChange} disabled={loading}>
@@ -224,6 +252,7 @@ const CustomerSupplierMaintenance = () => {
                       {customerTypes.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </div>
+
                   <div className="input-group">
                     <label>Category</label>
                     <select name="category" value={formData.category} onChange={handleChange} disabled={loading}>
@@ -240,6 +269,7 @@ const CustomerSupplierMaintenance = () => {
                         <input type="checkbox" name="isConsignee" checked={formData.isConsignee} onChange={handleChange} disabled={loading} />
                         <span className="checkmark"></span> Consignee
                       </label>
+
                       <label className="checkbox-item">
                         <input type="checkbox" name="isNotifyParty" checked={formData.isNotifyParty} onChange={handleChange} disabled={loading} />
                         <span className="checkmark"></span> Notify Party
@@ -251,6 +281,7 @@ const CustomerSupplierMaintenance = () => {
                         <input type="checkbox" name="isSupplier" checked={formData.isSupplier} onChange={handleChange} disabled={loading} />
                         <span className="checkmark"></span> Supplier
                       </label>
+
                       <label className="checkbox-item">
                         <input type="checkbox" name="isAgent" checked={formData.isAgent} onChange={handleChange} disabled={loading} />
                         <span className="checkmark"></span> Origin/Destination Agent
@@ -261,22 +292,17 @@ const CustomerSupplierMaintenance = () => {
 
                 <div className="form-actions">
                   <button type="button" className="btn-edit" onClick={openEditModal}>
-                    <span className="material-symbols-rounded">edit</span>
-                    Edit Existing
+                    <span className="material-symbols-rounded">edit</span> Edit Existing
                   </button>
 
-               <div style={{ flex: 1, minWidth: '20px' }}></div>
+                  <div style={{ flex: 1 }}></div>
 
                   <button type="submit" className="btn-primary" disabled={loading}>
-                    {loading ? 'Saving...' : (
-                      <>
-                        <span className="material-symbols-rounded">save</span>
-                        {isEditMode
-                          ? `Update ${activeTab === 'customer' ? 'Customer' : 'Supplier'}`
-                          : `Save ${activeTab === 'customer' ? 'Customer' : 'Supplier'}`
-                        }
-                      </>
-                    )}
+                    <span className="material-symbols-rounded">save</span>
+                    {isEditMode
+                      ? `Update ${activeTab === 'customer' ? 'Customer' : 'Supplier'}`
+                      : `Save ${activeTab === 'customer' ? 'Customer' : 'Supplier'}`
+                    }
                   </button>
 
                   <button type="button" className="btn-secondary" onClick={handleCancel} disabled={loading}>
@@ -325,6 +351,7 @@ const CustomerSupplierMaintenance = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };
