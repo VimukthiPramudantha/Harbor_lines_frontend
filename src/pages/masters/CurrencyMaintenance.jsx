@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
-import Sidebar from '../../components/layout/Sidebar.jsx';
-import Navbar from '../../components/layout/Navbar.jsx';
-import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
-import '../../styles/CurrencyMaintenance.css';
+import { useState, useEffect } from "react";
+import Sidebar from "../../components/layout/Sidebar.jsx";
+import Navbar from "../../components/layout/Navbar.jsx";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import "../../styles/CurrencyMaintenance.css";
 
-const API_BASE = 'http://localhost:5000/api/currencies';
+const API_BASE = "http://localhost:5000/api/currencies";
 
 const CurrencyMaintenance = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -16,20 +16,20 @@ const CurrencyMaintenance = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    code: '',
-    name: '',
+    code: "",
+    name: "",
     isLocal: false,
-    buyRate: '',
-    sellRate: ''
+    buyRate: "",
+    sellRate: "",
   });
 
   useEffect(() => {
-    const saved = localStorage.getItem('sidebarOpen');
+    const saved = localStorage.getItem("sidebarOpen");
     if (saved !== null) setSidebarOpen(JSON.parse(saved));
     fetchCurrencies();
   }, []);
@@ -37,7 +37,7 @@ const CurrencyMaintenance = () => {
   const toggleSidebar = () => {
     const newState = !sidebarOpen;
     setSidebarOpen(newState);
-    localStorage.setItem('sidebarOpen', JSON.stringify(newState));
+    localStorage.setItem("sidebarOpen", JSON.stringify(newState));
   };
 
   const fetchCurrencies = async () => {
@@ -46,14 +46,14 @@ const CurrencyMaintenance = () => {
       const data = await res.json();
       if (data.success) setCurrencies(data.data);
     } catch (err) {
-      toast.error('Failed to load currencies');
+      toast.error("Failed to load currencies");
     }
   };
 
   const openEditModal = async () => {
     await fetchCurrencies();
     setShowEditModal(true);
-    setSearchTerm('');
+    setSearchTerm("");
   };
 
   const selectForEdit = (currency) => {
@@ -61,30 +61,30 @@ const CurrencyMaintenance = () => {
       code: currency.code,
       name: currency.name,
       isLocal: currency.isLocal,
-      buyRate: currency.buyRate || '',
-      sellRate: currency.sellRate || ''
+      buyRate: currency.buyRate || "",
+      sellRate: currency.sellRate || "",
     });
     setIsEditMode(true);
     setEditingId(currency._id);
     setShowEditModal(false);
-    toast.success('Currency loaded for editing');
+    toast.success("Currency loaded for editing");
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
   // ✓ Helper to detect if form is empty
   const isFormEmpty = () => {
     return (
-      formData.code.trim() === '' &&
-      formData.name.trim() === '' &&
-      formData.buyRate.trim() === '' &&
-      formData.sellRate.trim() === '' &&
+      formData.code.trim() === "" &&
+      formData.name.trim() === "" &&
+      formData.buyRate.trim() === "" &&
+      formData.sellRate.trim() === "" &&
       formData.isLocal === false
     );
   };
@@ -94,26 +94,26 @@ const CurrencyMaintenance = () => {
     if (!isFormEmpty()) {
       // First press → clear form
       setFormData({
-        code: '',
-        name: '',
+        code: "",
+        name: "",
         isLocal: false,
-        buyRate: '',
-        sellRate: ''
+        buyRate: "",
+        sellRate: "",
       });
       setIsEditMode(false);
       setEditingId(null);
-      toast.success('Form cleared');
+      toast.success("Form cleared");
     } else {
       // Second press → navigate
-      toast.success('Cancel successful');
-      navigate('/dashboard');
+      toast.success("Cancel successful");
+      navigate("/dashboard");
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.code || !formData.name) {
-      toast.error('Code and Name are required!');
+      toast.error("Code and Name are required!");
       return;
     }
 
@@ -123,60 +123,77 @@ const CurrencyMaintenance = () => {
       ? `${API_BASE}/updateCurrency/${editingId}`
       : `${API_BASE}/createCurrency`;
 
-    const method = isEditMode ? 'PUT' : 'POST';
+    const method = isEditMode ? "PUT" : "POST";
 
-    toast.promise(
-      fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-        .then(res => {
-          if (!res.ok) throw new Error('Operation failed');
-          return res.json();
+    toast
+      .promise(
+        fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
         })
-        .then(data => {
-          if (!data.success) throw new Error(data.message || 'Failed');
-          fetchCurrencies();
+          .then((res) => {
+            if (!res.ok) throw new Error("Operation failed");
+            return res.json();
+          })
+          .then((data) => {
+            if (!data.success) throw new Error(data.message || "Failed");
+            fetchCurrencies();
 
-          if (!isEditMode) {
-            setFormData({ code: '', name: '', isLocal: false, buyRate: '', sellRate: '' });
-          }
+            if (!isEditMode) {
+              setFormData({
+                code: "",
+                name: "",
+                isLocal: false,
+                buyRate: "",
+                sellRate: "",
+              });
+            }
 
-          setIsEditMode(false);
-          setEditingId(null);
-        }),
-      {
-        loading: isEditMode ? 'Updating...' : 'Saving...',
-        success: isEditMode ? 'Currency updated!' : 'Currency added!',
-        error: 'Operation failed'
-      }
-    ).finally(() => setLoading(false));
+            setIsEditMode(false);
+            setEditingId(null);
+          }),
+        {
+          loading: isEditMode ? "Updating..." : "Saving...",
+          success: isEditMode ? "Currency updated!" : "Currency added!",
+          error: "Operation failed",
+        }
+      )
+      .finally(() => setLoading(false));
   };
 
-  const filtered = currencies.filter(c =>
-    c.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filtered = currencies.filter(
+    (c) =>
+      c.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="dashboard-layout">
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-      <div className={`main-content ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+      <div
+        className={`main-content ${
+          sidebarOpen ? "sidebar-open" : "sidebar-closed"
+        }`}
+      >
         <Navbar toggleSidebar={toggleSidebar} />
 
         <div className="page-content">
           <div className="page-wrapper">
             <div className="page-header">
               <h1 className="page-title">Currency Maintenance</h1>
-              <p className="page-subtitle">Manage system currencies and exchange rates</p>
+              <p className="page-subtitle">
+                Manage system currencies and exchange rates
+              </p>
             </div>
 
             <div className="currency-card">
               <form onSubmit={handleSubmit} className="currency-form">
                 <div className="form-grid">
                   <div className="input-group">
-                    <label>Code <span className="required">*</span></label>
+                    <label>
+                      Code <span className="required">*</span>
+                    </label>
                     <input
                       name="code"
                       value={formData.code}
@@ -188,7 +205,9 @@ const CurrencyMaintenance = () => {
                   </div>
 
                   <div className="input-group">
-                    <label>Name <span className="required">*</span></label>
+                    <label>
+                      Name <span className="required">*</span>
+                    </label>
                     <input
                       name="name"
                       value={formData.name}
@@ -224,7 +243,10 @@ const CurrencyMaintenance = () => {
                 </div>
 
                 <div className="checkbox-section">
-                  <label className="checkbox-item">
+                  <label
+                    className="checkbox-item"
+                    style={{ marginLeft: "20px" }}
+                  >
                     <input
                       type="checkbox"
                       name="isLocal"
@@ -238,19 +260,36 @@ const CurrencyMaintenance = () => {
                 </div>
 
                 <div className="form-actions">
-                  <button type="button" className="btn-edit" onClick={openEditModal}>
+                  <button
+                    type="button"
+                    className="btn-edit"
+                    onClick={openEditModal}
+                  >
                     <span className="material-symbols-rounded">edit</span>
                     Edit Existing
                   </button>
 
                   <div style={{ flex: 1 }}></div>
 
-                  <button type="submit" className="btn-primary" disabled={loading}>
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    disabled={loading}
+                  >
                     <span className="material-symbols-rounded">save</span>
-                    {loading ? 'Saving...' : (isEditMode ? 'Update Currency' : 'Add Currency')}
+                    {loading
+                      ? "Saving..."
+                      : isEditMode
+                      ? "Update Currency"
+                      : "Add Currency"}
                   </button>
 
-                  <button type="button" className="btn-secondary" onClick={handleCancel} disabled={loading}>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={handleCancel}
+                    disabled={loading}
+                  >
                     <span className="material-symbols-rounded">close</span>
                     Cancel
                   </button>
@@ -277,13 +316,18 @@ const CurrencyMaintenance = () => {
                     </thead>
 
                     <tbody>
-                      {currencies.map(c => (
-                        <tr key={c._id} className={c.isLocal ? 'local-currency' : ''}>
-                          <td><strong>{c.code}</strong></td>
+                      {currencies.map((c) => (
+                        <tr
+                          key={c._id}
+                          className={c.isLocal ? "local-currency" : ""}
+                        >
+                          <td>
+                            <strong>{c.code}</strong>
+                          </td>
                           <td>{c.name}</td>
-                          <td>{c.buyRate || '-'}</td>
-                          <td>{c.sellRate || '-'}</td>
-                          <td>{c.isLocal ? 'Yes' : 'No'}</td>
+                          <td>{c.buyRate || "-"}</td>
+                          <td>{c.sellRate || "-"}</td>
+                          <td>{c.isLocal ? "Yes" : "No"}</td>
                           <td>{new Date(c.createdAt).toLocaleDateString()}</td>
                         </tr>
                       ))}
@@ -299,10 +343,15 @@ const CurrencyMaintenance = () => {
       {/* Edit Modal */}
       {showEditModal && (
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Select Currency to Edit</h2>
-              <button className="close-btn" onClick={() => setShowEditModal(false)}>×</button>
+              <button
+                className="close-btn"
+                onClick={() => setShowEditModal(false)}
+              >
+                ×
+              </button>
             </div>
 
             <div className="modal-search">
@@ -319,13 +368,23 @@ const CurrencyMaintenance = () => {
               {filtered.length === 0 ? (
                 <p className="no-data">No currencies found</p>
               ) : (
-                filtered.map(currency => (
-                  <div key={currency._id} className="list-item" onClick={() => selectForEdit(currency)}>
+                filtered.map((currency) => (
+                  <div
+                    key={currency._id}
+                    className="list-item"
+                    onClick={() => selectForEdit(currency)}
+                  >
                     <div>
                       <strong>{currency.code}</strong> - {currency.name}
-                      {currency.isLocal && <span style={{ color: '#10b981', marginLeft: '8px' }}>Local</span>}
+                      {currency.isLocal && (
+                        <span style={{ color: "#10b981", marginLeft: "8px" }}>
+                          Local
+                        </span>
+                      )}
                     </div>
-                    <span className="material-symbols-rounded">arrow_forward_ios</span>
+                    <span className="material-symbols-rounded">
+                      arrow_forward_ios
+                    </span>
                   </div>
                 ))
               )}
