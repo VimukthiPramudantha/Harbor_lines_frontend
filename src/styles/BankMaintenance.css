@@ -135,14 +135,14 @@ input:focus, select:focus {
   color: #374151;
 }
 
-.checkmark {
+/* .checkmark {
   width: 20px;
   height: 20px;
   border: 2px solid #cbd5e1;
   border-radius: 6px;
   position: relative;
   transition: all 0.2s;
-}
+} */
 
 .checkbox-item input:checked + .checkmark {
   background: #3b82f6;
