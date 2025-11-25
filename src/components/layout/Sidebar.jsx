@@ -22,6 +22,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         { name: 'Customer / Supplier', path: '/masters/customers', icon: 'people' },
         { name: 'Currency',           path: '/masters/currency',  icon: 'currency_exchange' },
         { name: 'Unit of Measurement', path: '/masters/uom', icon: 'square_foot' },
+        { name: 'Bank Maintenance', path: '/masters/bank', icon: 'account_balance' },
       ]
     },
     { name: 'Reports',       icon: 'bar_chart',       path: '/reports' },
