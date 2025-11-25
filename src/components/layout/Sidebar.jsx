@@ -21,6 +21,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       subItems: [
         { name: 'Customer / Supplier', path: '/masters/customers', icon: 'people' },
         { name: 'Currency',           path: '/masters/currency',  icon: 'currency_exchange' },
+        { name: 'Unit of Measurement', path: '/masters/uom', icon: 'square_foot' },
       ]
     },
     { name: 'Reports',       icon: 'bar_chart',       path: '/reports' },
