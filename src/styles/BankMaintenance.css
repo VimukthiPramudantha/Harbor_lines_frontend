@@ -63,7 +63,7 @@
 }
 
 .section h3::before {
-  content: '';
+  content: "";
   display: inline-block;
   width: 8px;
   height: 8px;
@@ -104,7 +104,8 @@ label {
   font-size: 0.95rem;
 }
 
-input, select {
+input,
+select {
   padding: 1rem;
   border: 2px solid #e2eaea;
   border-radius: 12px;
@@ -113,7 +114,8 @@ input, select {
   background: white;
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
@@ -150,7 +152,7 @@ input:focus, select:focus {
 }
 
 .checkbox-item input:checked + .checkmark::after {
-  content: '✓';
+  content: "✓";
   position: absolute;
   color: white;
   font-weight: bold;
@@ -189,7 +191,8 @@ input:focus, select:focus {
   transform: translateY(-2px);
 }
 
-.btn-primary, .btn-secondary {
+.btn-primary,
+.btn-secondary {
   padding: 1rem 2rem;
   border-radius: 50px;
   font-weight: 600;
@@ -223,8 +226,11 @@ input:focus, select:focus {
 /* Modal Styles (same as others) */
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.7);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -238,7 +244,7 @@ input:focus, select:focus {
   max-width: 600px;
   max-height: 80vh;
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
 }
 
 .modal-header {
@@ -250,7 +256,10 @@ input:focus, select:focus {
   align-items: center;
 }
 
-.modal-header h2 { margin: 0; font-size: 1.4rem; }
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
 
 .close-btn {
   background: none;
@@ -321,7 +330,9 @@ input:focus, select:focus {
   .form-actions {
     flex-direction: column;
   }
-  .btn-primary, .btn-secondary, .btn-edit {
+  .btn-primary,
+  .btn-secondary,
+  .btn-edit {
     width: 100%;
   }
 }

@@ -5,7 +5,7 @@
   background: white;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
   padding: 2rem;
 }
 
@@ -76,7 +76,13 @@
   background: #059669;
 }
 
-.modal-overlay, .modal-content, .modal-header, .close-btn,
-.modal-search, .modal-list, .list-item, .no-data {
+.modal-overlay,
+.modal-content,
+.modal-header,
+.close-btn,
+.modal-search,
+.modal-list,
+.list-item,
+.no-data {
   /* Same as CustomerSupplier.css modal styles */
 }
