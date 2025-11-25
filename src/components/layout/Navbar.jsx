@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import toast from "react-hot-toast";
 import "../../styles/Navbar.css";
 
 const Navbar = ({ toggleSidebar }) => {
   const { user, logout } = useAuth();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const [theme, setTheme] = useState("light");
   const [showProfile, setShowProfile] = useState(false);
 
@@ -47,7 +47,10 @@ const Navbar = ({ toggleSidebar }) => {
           <span className="badge">3</span>
         </button>
 
-        <div className="user-profile" onClick={() => setShowProfile(!showProfile)}>
+        <div
+          className="user-profile"
+          onClick={() => setShowProfile(!showProfile)}
+        >
           <img
             src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin123"
             alt="User"
