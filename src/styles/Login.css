@@ -1,7 +1,7 @@
 .login-container {
   display: flex;
   height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Left Side */
@@ -147,7 +147,7 @@
 .logo-placeholder {
   width: 120px;
   height: 120px;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   margin: 0 auto 2rem;
   display: flex;
@@ -168,8 +168,8 @@
   opacity: 0.9;
   font-weight: 300;
 }
-#logo{
-    max-width: 500px;
+#logo {
+  max-width: 500px;
 }
 
 /* Responsive */

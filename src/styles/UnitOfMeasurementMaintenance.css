@@ -5,17 +5,34 @@
   background: white;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
   padding: 2rem;
 }
 
-.uom-form { margin-bottom: 3rem; }
+.uom-form {
+  margin-bottom: 3rem;
+}
 
-.uom-table h3 { margin: 2rem 0 1rem; color: #1e293b; }
+.uom-table h3 {
+  margin: 2rem 0 1rem;
+  color: #1e293b;
+}
 
-.uom-table table { width: 100%; border-collapse: collapse; }
-.uom-table th, .uom-table td { padding: 1rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
-.uom-table th { background: #f1f5f9; font-weight: 600; color: #475569; }
+.uom-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.uom-table th,
+.uom-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+.uom-table th {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #475569;
+}
 
 .type-badge {
   padding: 4px 12px;
@@ -23,11 +40,29 @@
   font-size: 0.8rem;
   font-weight: 600;
 }
-.type-badge.flight { background: #dbeafe; color: #1d4ed8; }
-.type-badge.inventory { background: #ecfdf5; color: #166534; }
-.type-badge.small { font-size: 0.7rem; padding: 2px 8px; margin-left: 8px; }
+.type-badge.flight {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+.type-badge.inventory {
+  background: #ecfdf5;
+  color: #166534;
+}
+.type-badge.small {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  margin-left: 8px;
+}
 
-.flight-uom { background: #f0f5ff; }
-.inventory-uom { background: #f0fdf4; }
+.flight-uom {
+  background: #f0f5ff;
+}
+.inventory-uom {
+  background: #f0fdf4;
+}
 
-.no-data { text-align: center; padding: 3rem; color: #64748b; }
+.no-data {
+  text-align: center;
+  padding: 3rem;
+  color: #64748b;
+}
