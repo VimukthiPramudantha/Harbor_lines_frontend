@@ -12,7 +12,6 @@ const BankMaintenance = () => {
   const [activeTab, setActiveTab] = useState('tab1');
   const [loading, setLoading] = useState(false);
 
-  // Edit Mode
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -20,7 +19,6 @@ const BankMaintenance = () => {
   const [banks, setBanks] = useState([]);
 
   const [formData, setFormData] = useState({
-    // Tab 1
     bankCode: '',
     bankName: '',
     accountName: '',
@@ -29,7 +27,6 @@ const BankMaintenance = () => {
     accountCity: '',
     accountNumber: '',
 
-    // Tab 2
     bankAddress: '',
     bankStreet: '',
     bankCity: '',
@@ -38,7 +35,6 @@ const BankMaintenance = () => {
     isCompanyAccount: false,
     chequeNo: '',
 
-    // GL Accounts
     bankChargesCode: '',
     bankChargesName: '',
     glAccountCode: '',
@@ -62,40 +58,35 @@ const BankMaintenance = () => {
       const res = await fetch(`${API_BASE}/getAllBanks`);
       const data = await res.json();
       if (data.success) setBanks(data.data);
-    } catch (err) {
+    } catch {
       toast.error('Failed to load banks');
     }
   };
 
-  // Validate Tab 1 before allowing Tab 2
   const isTab1Valid = () => {
-    return formData.bankCode && 
-           formData.bankName && 
-           formData.accountName && 
-           formData.accountNumber;
+    return (
+      formData.bankCode &&
+      formData.bankName &&
+      formData.accountName &&
+      formData.accountNumber
+    );
   };
 
-  const handleTabClick = (tab) => {
-    if (tab === 'tab2' && !isTab1Valid() && !isEditMode) {
-      toast.error('Please complete Bank & Company Information first!');
+  const handleNext = () => {
+    if (!isTab1Valid()) {
+      toast.error('Please fill all required fields in Tab 1');
       return;
     }
-    setActiveTab(tab);
-  };
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    setActiveTab('tab2');
+    toast.success('Bank info complete. Continue to Bank Details & GL Accounts');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isTab1Valid()) {
-      toast.error('Please fill all required fields in Tab 1');
-      setActiveTab('tab1');
+
+    // Only allow saving on Tab 2
+    if (activeTab === 'tab1') {
+      handleNext();
       return;
     }
 
@@ -107,37 +98,53 @@ const BankMaintenance = () => {
 
     const method = isEditMode ? 'PUT' : 'POST';
 
-    toast.promise(
-      fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-      .then(res => {
-        if (!res.ok) throw new Error('Failed');
-        return res.json();
-      })
-      .then(data => {
-        if (!data.success) throw new Error(data.message);
-        fetchBanks();
-        if (!isEditMode) resetForm();
-        setIsEditMode(false);
-        setEditingId(null);
-      }),
-      {
-        loading: isEditMode ? 'Updating...' : 'Saving...',
-        success: isEditMode ? 'Bank updated!' : 'Bank added!',
-        error: 'Operation failed'
-      }
-    ).finally(() => setLoading(false));
+    toast
+      .promise(
+        fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error('Failed');
+            return res.json();
+          })
+          .then((data) => {
+            if (!data.success) throw new Error(data.message);
+            fetchBanks();
+            if (!isEditMode) resetForm();
+            setIsEditMode(false);
+            setEditingId(null);
+          }),
+        {
+          loading: isEditMode ? 'Updating...' : 'Saving...',
+          success: isEditMode ? 'Bank updated!' : 'Bank added!',
+          error: 'Operation failed'
+        }
+      )
+      .finally(() => setLoading(false));
   };
 
   const resetForm = () => {
     setFormData({
-      bankCode: '', bankName: '', bankAddress: '', bankStreet: '', bankCity: '',
-      accountName: '', accountAddress: '', accountStreet: '', accountCity: '', accountNumber: '',
-      telephone: '', swiftCode: '', isCompanyAccount: false, chequeNo: '',
-      bankChargesCode: '', bankChargesName: '', glAccountCode: '', glAccountName: ''
+      bankCode: '',
+      bankName: '',
+      bankAddress: '',
+      bankStreet: '',
+      bankCity: '',
+      accountName: '',
+      accountAddress: '',
+      accountStreet: '',
+      accountCity: '',
+      accountNumber: '',
+      telephone: '',
+      swiftCode: '',
+      isCompanyAccount: false,
+      chequeNo: '',
+      bankChargesCode: '',
+      bankChargesName: '',
+      glAccountCode: '',
+      glAccountName: ''
     });
     setActiveTab('tab1');
   };
@@ -160,10 +167,11 @@ const BankMaintenance = () => {
     setIsEditMode(true);
     setEditingId(bank._id);
     setShowEditModal(false);
+    setActiveTab('tab1');
     toast.success('Bank loaded for editing');
   };
 
-  const filtered = banks.filter(b =>
+  const filtered = banks.filter((b) =>
     b.bankCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
     b.bankName.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -185,20 +193,20 @@ const BankMaintenance = () => {
               <div className="tab-header">
                 <button
                   className={`tab-btn ${activeTab === 'tab1' ? 'active' : ''}`}
-                  onClick={() => handleTabClick('tab1')}
+                  onClick={() => setActiveTab('tab1')}
                 >
                   Bank & Company Info
                 </button>
                 <button
                   className={`tab-btn ${activeTab === 'tab2' ? 'active' : ''}`}
-                  onClick={() => handleTabClick('tab2')}
-                  disabled={!isTab1Valid() && !isEditMode}
+                  onClick={() => handleNext()}
                 >
                   Bank Details & GL Accounts
                 </button>
               </div>
 
               <form onSubmit={handleSubmit} className="bank-form">
+                {/* TAB 1 */}
                 {activeTab === 'tab1' && (
                   <div className="tab-content">
                     <div className="section">
@@ -206,11 +214,11 @@ const BankMaintenance = () => {
                       <div className="form-grid">
                         <div className="input-group">
                           <label>Bank Code <span className="required">*</span></label>
-                          <input name="bankCode" value={formData.bankCode} onChange={handleChange} required disabled={loading} />
+                          <input name="bankCode" value={formData.bankCode} onChange={(e) => setFormData({ ...formData, bankCode: e.target.value })} />
                         </div>
                         <div className="input-group">
                           <label>Bank Name <span className="required">*</span></label>
-                          <input name="bankName" value={formData.bankName} onChange={handleChange} required disabled={loading} />
+                          <input name="bankName" value={formData.bankName} onChange={(e) => setFormData({ ...formData, bankName: e.target.value })} />
                         </div>
                       </div>
                     </div>
@@ -220,29 +228,34 @@ const BankMaintenance = () => {
                       <div className="form-grid">
                         <div className="input-group">
                           <label>Account Name <span className="required">*</span></label>
-                          <input name="accountName" value={formData.accountName} onChange={handleChange} required disabled={loading} />
+                          <input name="accountName" value={formData.accountName} onChange={(e) => setFormData({ ...formData, accountName: e.target.value })} />
                         </div>
+
                         <div className="input-group full">
                           <label>Address</label>
-                          <input name="accountAddress" value={formData.accountAddress} onChange={handleChange} disabled={loading} />
+                          <input name="accountAddress" value={formData.accountAddress} onChange={(e) => setFormData({ ...formData, accountAddress: e.target.value })} />
                         </div>
+
                         <div className="input-group">
                           <label>Street</label>
-                          <input name="accountStreet" value={formData.accountStreet} onChange={handleChange} disabled={loading} />
+                          <input name="accountStreet" value={formData.accountStreet} onChange={(e) => setFormData({ ...formData, accountStreet: e.target.value })} />
                         </div>
+
                         <div className="input-group">
                           <label>City</label>
-                          <input name="accountCity" value={formData.accountCity} onChange={handleChange} disabled={loading} />
+                          <input name="accountCity" value={formData.accountCity} onChange={(e) => setFormData({ ...formData, accountCity: e.target.value })} />
                         </div>
+
                         <div className="input-group">
                           <label>Account Number <span className="required">*</span></label>
-                          <input name="accountNumber" value={formData.accountNumber} onChange={handleChange} required disabled={loading} />
+                          <input name="accountNumber" value={formData.accountNumber} onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })} />
                         </div>
                       </div>
                     </div>
                   </div>
                 )}
 
+                {/* TAB 2 */}
                 {activeTab === 'tab2' && (
                   <div className="tab-content">
                     <div className="section">
@@ -250,35 +263,46 @@ const BankMaintenance = () => {
                       <div className="form-grid">
                         <div className="input-group full">
                           <label>Bank Address</label>
-                          <input name="bankAddress" value={formData.bankAddress} onChange={handleChange} disabled={loading} />
+                          <input name="bankAddress" value={formData.bankAddress} onChange={(e) => setFormData({ ...formData, bankAddress: e.target.value })} />
                         </div>
+
                         <div className="input-group">
                           <label>Street</label>
-                          <input name="bankStreet" value={formData.bankStreet} onChange={handleChange} disabled={loading} />
+                          <input name="bankStreet" value={formData.bankStreet} onChange={(e) => setFormData({ ...formData, bankStreet: e.target.value })} />
                         </div>
+
                         <div className="input-group">
                           <label>City</label>
-                          <input name="bankCity" value={formData.bankCity} onChange={handleChange} disabled={loading} />
+                          <input name="bankCity" value={formData.bankCity} onChange={(e) => setFormData({ ...formData, bankCity: e.target.value })} />
                         </div>
+
                         <div className="input-group">
                           <label>Telephone</label>
-                          <input name="telephone" value={formData.telephone} onChange={handleChange} disabled={loading} />
+                          <input name="telephone" value={formData.telephone} onChange={(e) => setFormData({ ...formData, telephone: e.target.value })} />
                         </div>
+
                         <div className="input-group">
                           <label>SWIFT Code</label>
-                          <input name="swiftCode" value={formData.swiftCode} onChange={handleChange} disabled={loading} />
+                          <input name="swiftCode" value={formData.swiftCode} onChange={(e) => setFormData({ ...formData, swiftCode: e.target.value })} />
                         </div>
-                      </div>
-
-                      <div className="checkbox-section">
                         <label className="checkbox-item">
-                          <input type="checkbox" name="isCompanyAccount" checked={formData.isCompanyAccount} onChange={handleChange} disabled={loading} />
+                          <input
+                            type="checkbox"
+                            name="isCompanyAccount"
+                            checked={formData.isCompanyAccount}
+                            onChange={(e) =>
+                              setFormData({ ...formData, isCompanyAccount: e.target.checked })
+                            }
+                          />
                           <span className="checkmark"></span>
                           This is Company Account
                         </label>
+                      </div>
+
+                      <div className="checkbox-section">
                         <div className="input-group inline">
                           <label>Cheque No. Prefix</label>
-                          <input name="chequeNo" value={formData.chequeNo} onChange={handleChange} disabled={loading} />
+                          <input name="chequeNo" value={formData.chequeNo} onChange={(e) => setFormData({ ...formData, chequeNo: e.target.value })} />
                         </div>
                       </div>
                     </div>
@@ -288,19 +312,23 @@ const BankMaintenance = () => {
                       <div className="form-grid">
                         <div className="input-group">
                           <label>Bank Charges Account Code</label>
-                          <input name="bankChargesCode" value={formData.bankChargesCode} onChange={handleChange} disabled={loading} />
+                          <input name="bankChargesCode" value={formData.bankChargesCode} onChange={(e) => setFormData({ ...formData, bankChargesCode: e.target.value })} />
                         </div>
+
                         <div className="input-group">
                           <label>Bank Charges Account Name</label>
-                          <input name="bankChargesName" value={formData.bankChargesName} onChange={handleChange} disabled={loading} />
+                          <input name="bankChargesName" value={formData.bankChargesName} onChange={(e) => setFormData({ ...formData, bankChargesName: e.target.value })} />
                         </div>
+
+<div></div>
                         <div className="input-group">
                           <label>GL Account Code</label>
-                          <input name="glAccountCode" value={formData.glAccountCode} onChange={handleChange} disabled={loading} />
+                          <input name="glAccountCode" value={formData.glAccountCode} onChange={(e) => setFormData({ ...formData, glAccountCode: e.target.value })} />
                         </div>
+
                         <div className="input-group">
                           <label>GL Account Name</label>
-                          <input name="glAccountName" value={formData.glAccountName} onChange={handleChange} disabled={loading} />
+                          <input name="glAccountName" value={formData.glAccountName} onChange={(e) => setFormData({ ...formData, glAccountName: e.target.value })} />
                         </div>
                       </div>
                     </div>
@@ -308,17 +336,38 @@ const BankMaintenance = () => {
                 )}
 
                 <div className="form-actions">
-                  <button type="button" className="btn-edit" onClick={openEditModal}>
+                  <button
+                    type="button"
+                    className="btn-edit"
+                    onClick={openEditModal}
+                    disabled={loading}
+                  >
                     Edit Existing
                   </button>
 
                   <div style={{ flex: 1 }}></div>
 
-                  <button type="submit" className="btn-primary" disabled={loading}>
-                    {loading ? 'Saving...' : (isEditMode ? 'Update Bank' : 'Save Bank')}
+                  {/* BUTTON BEHAVIOR CHANGES */}
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    disabled={loading}
+                  >
+                    {activeTab === 'tab1'
+                      ? 'Next'
+                      : loading
+                        ? 'Saving...'
+                        : isEditMode
+                          ? 'Update Bank'
+                          : 'Save Bank'}
                   </button>
 
-                  <button type="button" className="btn-secondary" onClick={handleCancel} disabled={loading}>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={handleCancel}
+                    disabled={loading}
+                  >
                     Cancel
                   </button>
                 </div>
@@ -328,14 +377,16 @@ const BankMaintenance = () => {
         </div>
       </div>
 
-      {/* Edit Modal */}
       {showEditModal && (
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Select Bank to Edit</h2>
-              <button className="close-btn" onClick={() => setShowEditModal(false)}>×</button>
+              <button className="close-btn" onClick={() => setShowEditModal(false)}>
+                ×
+              </button>
             </div>
+
             <div className="modal-search">
               <input
                 type="text"
@@ -345,11 +396,12 @@ const BankMaintenance = () => {
                 autoFocus
               />
             </div>
+
             <div className="modal-list">
               {filtered.length === 0 ? (
                 <p className="no-data">No banks found</p>
               ) : (
-                filtered.map(bank => (
+                filtered.map((bank) => (
                   <div key={bank._id} className="list-item" onClick={() => selectForEdit(bank)}>
                     <div>
                       <strong>{bank.bankCode}</strong> - {bank.bankName}
