@@ -18,6 +18,9 @@ const TaxMaintenance = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [taxes, setTaxes] = useState([]);
 
+  // NEW: cancel click tracker
+  const [cancelPressed, setCancelPressed] = useState(false);
+
   const [formData, setFormData] = useState({
     code: '',
     name: '',
@@ -28,7 +31,6 @@ const TaxMaintenance = () => {
     invoiceHeader: '',
     displayOnly: false,
 
-    // ← NOW ONLY ONE PRIORITY FIELD (1-10)
     priority: '1',
 
     revenueAccountStatus: 'Income',
@@ -98,8 +100,12 @@ const TaxMaintenance = () => {
         if (!data.success) throw new Error(data.message);
         fetchTaxes();
         if (!isEditMode) resetForm();
+
         setIsEditMode(false);
         setEditingId(null);
+
+        // RESET CANCEL BUTTON COUNTER
+        setCancelPressed(false);
       }),
       {
         loading: isEditMode ? 'Updating...' : 'Saving...',
@@ -119,11 +125,19 @@ const TaxMaintenance = () => {
     });
   };
 
+  // UPDATED CANCEL LOGIC (Two-step)
   const handleCancel = () => {
-    resetForm();
-    setIsEditMode(false);
-    setEditingId(null);
-    toast.success('Form cleared');
+    if (!cancelPressed) {
+      resetForm();
+      setIsEditMode(false);
+      setEditingId(null);
+      setCancelPressed(true);
+      toast.success("Form cleared. Press again to exit.");
+      return;
+    }
+
+    // SECOND CLICK → redirect
+    window.location.href = "/dashboard";
   };
 
   const openEditModal = async () => {
@@ -135,11 +149,16 @@ const TaxMaintenance = () => {
   const selectForEdit = (tax) => {
     setFormData({
       ...tax,
-      priority: tax.priority?.toString() || '1' // ensure it's string for select
+      priority: tax.priority?.toString() || '1'
     });
+
     setIsEditMode(true);
     setEditingId(tax._id);
     setShowEditModal(false);
+
+    // Reset cancel step counter
+    setCancelPressed(false);
+
     toast.success('Tax loaded for editing');
   };
 
@@ -228,7 +247,7 @@ const TaxMaintenance = () => {
                   </div>
                 </div>
 
-                {/* REVENUE & COST - unchanged */}
+                {/* REVENUE & COST */}
                 <div className="section">
                   <h3>Revenue GL Mapping</h3>
                   <div className="form-grid">
@@ -279,7 +298,7 @@ const TaxMaintenance = () => {
         </div>
       </div>
 
-      {/* Edit Modal - updated display */}
+      {/* Edit Modal */}
       {showEditModal && (
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -288,14 +307,24 @@ const TaxMaintenance = () => {
               <button className="close-btn" onClick={() => setShowEditModal(false)}>×</button>
             </div>
             <div className="modal-search">
-              <input type="text" placeholder="Search by Code or Name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} autoFocus />
+              <input
+                type="text"
+                placeholder="Search by Code or Name..."
+                autoFocus
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
             </div>
             <div className="modal-list">
               {filtered.length === 0 ? (
                 <p className="no-data">No taxes found</p>
               ) : (
                 filtered.map(tax => (
-                  <div key={tax._id} className="list-item" onClick={() => selectForEdit(tax)}>
+                  <div
+                    key={tax._id}
+                    className="list-item"
+                    onClick={() => selectForEdit(tax)}
+                  >
                     <div>
                       <strong>{tax.code}</strong> - {tax.name}
                       <br />
