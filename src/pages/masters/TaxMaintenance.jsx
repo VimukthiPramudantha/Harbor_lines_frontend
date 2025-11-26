@@ -19,25 +19,20 @@ const TaxMaintenance = () => {
   const [taxes, setTaxes] = useState([]);
 
   const [formData, setFormData] = useState({
-    // Tax Information
     code: '',
     name: '',
-
-    // Rate Information
     rate: '',
     registrationNo: '',
-    operator: 'multiply', // multiply | divide
+    operator: 'multiply',
     divideBy: '',
     invoiceHeader: '',
     displayOnly: false,
-    priorityType: 'addition', // addition | deduction
-    priorityNumber: '1',
 
-    // Revenue
+    // ← NOW ONLY ONE PRIORITY FIELD (1-10)
+    priority: '1',
+
     revenueAccountStatus: 'Income',
     revenuePayableCode: '',
-
-    // Cost
     costAccountStatus: 'Expense',
     costPayableCode: ''
   });
@@ -118,7 +113,7 @@ const TaxMaintenance = () => {
     setFormData({
       code: '', name: '', rate: '', registrationNo: '', operator: 'multiply',
       divideBy: '', invoiceHeader: '', displayOnly: false,
-      priorityType: 'addition', priorityNumber: '1',
+      priority: '1',
       revenueAccountStatus: 'Income', revenuePayableCode: '',
       costAccountStatus: 'Expense', costPayableCode: ''
     });
@@ -138,7 +133,10 @@ const TaxMaintenance = () => {
   };
 
   const selectForEdit = (tax) => {
-    setFormData({ ...tax });
+    setFormData({
+      ...tax,
+      priority: tax.priority?.toString() || '1' // ensure it's string for select
+    });
     setIsEditMode(true);
     setEditingId(tax._id);
     setShowEditModal(false);
@@ -217,35 +215,27 @@ const TaxMaintenance = () => {
                     </div>
                   </div>
 
+                  {/* SINGLE PRIORITY FIELD */}
                   <div className="form-grid">
                     <div className="input-group">
-                      <label>Priority Type</label>
-                      <select name="priorityType" value={formData.priorityType} onChange={handleChange} disabled={loading}>
-                        <option value="addition">Addition (+)</option>
-                        <option value="deduction">Deduction (-)</option>
-                      </select>
-                    </div>
-                    <div className="input-group">
-                      <label>Priority Number (1-10)</label>
-                      <select name="priorityNumber" value={formData.priorityNumber} onChange={handleChange} disabled={loading}>
+                      <label>Priority (1)</label>
+                      <select name="priority" value={formData.priority} onChange={handleChange} disabled={loading}>
                         {[1,2,3,4,5,6,7,8,9,10].map(n => (
-                          <option key={n} value={n}>{n}</option>
+                          <option key={n} value={n}>{n} {n === 1 ? '(Highest)' : n === 10 ? '(Lowest)' : ''}</option>
                         ))}
                       </select>
                     </div>
                   </div>
                 </div>
 
-                {/* REVENUE */}
+                {/* REVENUE & COST - unchanged */}
                 <div className="section">
                   <h3>Revenue GL Mapping</h3>
                   <div className="form-grid">
                     <div className="input-group">
                       <label>Account Status</label>
                       <select name="revenueAccountStatus" value={formData.revenueAccountStatus} onChange={handleChange} disabled={loading}>
-                        {accountStatusOptions.map(opt => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
+                        {accountStatusOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                       </select>
                     </div>
                     <div className="input-group">
@@ -255,16 +245,13 @@ const TaxMaintenance = () => {
                   </div>
                 </div>
 
-                {/* COST */}
                 <div className="section">
                   <h3>Cost GL Mapping</h3>
                   <div className="form-grid">
                     <div className="input-group">
                       <label>Account Status</label>
                       <select name="costAccountStatus" value={formData.costAccountStatus} onChange={handleChange} disabled={loading}>
-                        {accountStatusOptions.map(opt => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
+                        {accountStatusOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                       </select>
                     </div>
                     <div className="input-group">
@@ -278,13 +265,10 @@ const TaxMaintenance = () => {
                   <button type="button" className="btn-edit" onClick={openEditModal}>
                     Edit Existing
                   </button>
-
                   <div style={{ flex: 1 }}></div>
-
                   <button type="submit" className="btn-primary" disabled={loading}>
                     {loading ? 'Saving...' : (isEditMode ? 'Update Tax' : 'Add Tax')}
                   </button>
-
                   <button type="button" className="btn-secondary" onClick={handleCancel} disabled={loading}>
                     Cancel
                   </button>
@@ -295,7 +279,7 @@ const TaxMaintenance = () => {
         </div>
       </div>
 
-      {/* Edit Modal */}
+      {/* Edit Modal - updated display */}
       {showEditModal && (
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -304,13 +288,7 @@ const TaxMaintenance = () => {
               <button className="close-btn" onClick={() => setShowEditModal(false)}>×</button>
             </div>
             <div className="modal-search">
-              <input
-                type="text"
-                placeholder="Search by Code or Name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                autoFocus
-              />
+              <input type="text" placeholder="Search by Code or Name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} autoFocus />
             </div>
             <div className="modal-list">
               {filtered.length === 0 ? (
@@ -321,7 +299,7 @@ const TaxMaintenance = () => {
                     <div>
                       <strong>{tax.code}</strong> - {tax.name}
                       <br />
-                      <small>{tax.rate}% • {tax.priorityType} (Priority {tax.priorityNumber})</small>
+                      <small>{tax.rate}% • Priority: {tax.priority}</small>
                     </div>
                     <span className="material-symbols-rounded">arrow_forward_ios</span>
                   </div>
