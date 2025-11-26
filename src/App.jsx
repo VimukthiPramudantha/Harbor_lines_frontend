@@ -7,6 +7,7 @@ import CustomerSupplierMaintenance from './pages/masters/CustomerSupplierMainten
 import CurrencyMaintenance from './pages/masters/CurrencyMaintenance.jsx'
 import UnitOfMeasurementMaintenance from './pages/masters/UnitOfMeasurementMaintenance.jsx'
 import BankMaintenance from './pages/masters/BankMaintenance.jsx'
+import TaxMaintenance  from './pages/masters/TaxMaintenance.jsx'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -31,6 +32,7 @@ function App() {
         <Route path="/masters/currency" element={<CurrencyMaintenance />} />
         <Route path="/masters/uom" element={<UnitOfMeasurementMaintenance />} />
         <Route path="/masters/bank" element={<BankMaintenance />} />
+        <Route path="/masters/tax" element={<TaxMaintenance />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

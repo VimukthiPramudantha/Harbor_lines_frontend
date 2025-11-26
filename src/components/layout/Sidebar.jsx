@@ -39,6 +39,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           path: "/masters/bank",
           icon: "account_balance",
         },
+        { name: "Tax Maintenance", path: "/masters/tax", icon: "receipt_long" },
       ],
     },
     { name: "Reports", icon: "bar_chart", path: "/reports" },
