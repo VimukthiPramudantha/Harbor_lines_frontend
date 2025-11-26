@@ -108,15 +108,16 @@ input::placeholder {
 
 /* Checkbox Styling */
 .checkbox-item {
-  display: flex;
+  display: flex !important;
+  justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: 5px;
   font-weight: 500;
   cursor: pointer;
   user-select: none;
 }
 
-.checkmark {
+/* .checkmark {
   width: 22px;
   height: 22px;
   border: 2.5px solid #cbd5e1;
@@ -124,7 +125,7 @@ input::placeholder {
   position: relative;
   transition: all 0.2s ease;
   background: white;
-}
+} */
 
 .checkbox-item input:checked + .checkmark {
   background: #3b82f6;
