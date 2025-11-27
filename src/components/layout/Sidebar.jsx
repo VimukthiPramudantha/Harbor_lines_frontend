@@ -44,6 +44,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         { name: "Vessel Maintenance", path: "/freight/vessel", icon: "directions_boat_filled" },
         { name: "Flight Maintenance", path: "/freight/flight", icon: "flight" },
         { name: "Sea Destination Maintenance", path: "/freight/sea-destination", icon: "anchor" },
+        { name: "Air Destination Maintenance", path: "/freight/air-destination", icon: "flight" },
         ],
     },
 
