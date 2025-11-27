@@ -94,11 +94,24 @@ const VesselMaintenance = () => {
     ).finally(() => setLoading(false));
   };
 
+const isFormEmpty = () => {
+    return (
+      !formData.code.trim() &&
+      !formData.name.trim() &&
+      !formData.country.trim() &&
+      !formData.agentName.trim()
+    );
+  };
+
   const handleCancel = () => {
-    setFormData({ code: '', name: '', country: '', agentName: '' });
-    setIsEditMode(false);
-    setEditingId(null);
-    toast.success('Form cleared');
+    if (!isFormEmpty()) {
+      setFormData({ code: '', name: '', country: '', agentName: '' });
+      setIsEditMode(false);
+      setEditingId(null);
+      toast.success('Form cleared');
+    } else {
+      window.location.href = '/dashboard';
+    }
   };
 
   const openEditModal = async () => {
