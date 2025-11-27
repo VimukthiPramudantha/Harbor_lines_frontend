@@ -10,6 +10,7 @@ import BankMaintenance from './pages/masters/BankMaintenance.jsx'
 import TaxMaintenance  from './pages/masters/TaxMaintenance.jsx'
 import VesselMaintenance from './pages/Freight/VesselMaintenance.jsx'
 import FlightMaintenance from './pages/Freight/FlightMaintenance.jsx'
+import SeaDestinationMaintenance from './pages/Freight/SeaDestinationMaintenance.jsx';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -39,6 +40,7 @@ function App() {
 
         <Route path="/freight/vessel" element={<VesselMaintenance />} />
         <Route path='/freight/flight' element={<FlightMaintenance/>}/>
+        <Route path="/freight/sea-destination" element={<SeaDestinationMaintenance />} />
           
 
       </Routes>

@@ -43,6 +43,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       subItems: [
         { name: "Vessel Maintenance", path: "/freight/vessel", icon: "directions_boat_filled" },
         { name: "Flight Maintenance", path: "/freight/flight", icon: "flight" },
+        { name: "Sea Destination Maintenance", path: "/freight/sea-destination", icon: "anchor" },
         ],
     },
 
