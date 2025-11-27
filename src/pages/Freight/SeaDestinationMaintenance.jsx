@@ -92,14 +92,25 @@ const SeaDestinationMaintenance = () => {
     ).finally(() => setLoading(false));
   };
 
-  const handleCancel = () => {
+ const isFormEmpty = () => {
+  return (
+    !formData.code.trim() &&
+    !formData.name.trim()
+  );
+};
+
+const handleCancel = () => {
+  if (!isFormEmpty()) {
     setFormData({ code: '', name: '' });
     setIsEditMode(false);
     setEditingId(null);
     toast.success('Form cleared');
-  };
+  } else {
+    window.location.href = '/dashboard';
+  }
+};
 
-  const openEditModal = async () => {
+const openEditModal = async () => {
     await fetchDestinations();
     setShowEditModal(true);
     setSearchTerm('');
