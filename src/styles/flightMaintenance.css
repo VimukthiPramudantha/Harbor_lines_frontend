@@ -207,7 +207,7 @@ input::placeholder {
 }
 
 /* Modal - Premium Style */
-.modal-overlay {
+/* .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.8);
@@ -227,29 +227,29 @@ input::placeholder {
   overflow: hidden;
   box-shadow: 0 50px 120px rgba(0,0,0,0.45);
   animation: modalZoom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
+} */
 
 @keyframes modalZoom {
   from { transform: scale(0.8); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
 
-.modal-header {
+/* .modal-header {
   padding: 2rem 2.5rem;
   background: linear-gradient(135deg, #7c3aed, #6d28d9);
   color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
+} */
+/* 
 .modal-header h2 {
   margin: 0;
   font-size: 1.8rem;
   font-weight: 800;
-}
+} */
 
-.close-btn {
+/* .close-btn {
   background: none;
   border: none;
   color: white;
@@ -267,9 +267,9 @@ input::placeholder {
 .close-btn:hover {
   background: rgba(255,255,255,0.25);
   transform: rotate(90deg);
-}
+} */
 
-.modal-search {
+/* .modal-search {
   padding: 1.8rem 2.5rem;
   border-bottom: 1px solid #e2e8f0;
 }
@@ -309,7 +309,7 @@ input::placeholder {
   padding-left: 3.2rem;
   border-left: 6px solid #7c3aed;
   transform: translateX(8px);
-}
+} */
 
 .list-item strong {
   font-size: 1.2rem;
