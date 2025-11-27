@@ -1,3 +1,4 @@
+// frontend/src/components/layout/Sidebar.jsx
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import "../../styles/Sidebar.css";
@@ -6,12 +7,17 @@ import logo from "../../assets/headerLogo.png";
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const sidebarRef = useRef(null);
   const location = useLocation();
+
+  // Dropdown states
   const [mastersOpen, setMastersOpen] = useState(false);
+  const [freightOpen, setFreightOpen] = useState(false);
 
   const menuItems = [
     { name: "Dashboard", icon: "dashboard", path: "/dashboard" },
     { name: "Import Jobs", icon: "input", path: "/jobs/import" },
     { name: "Export Jobs", icon: "output", path: "/jobs/export" },
+
+    // MASTER FILES
     {
       name: "Master Files",
       icon: "folder_open",
@@ -19,40 +25,43 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       isOpen: mastersOpen,
       onToggle: () => setMastersOpen(!mastersOpen),
       subItems: [
-        {
-          name: "Customer / Supplier",
-          path: "/masters/customers",
-          icon: "people",
-        },
-        {
-          name: "Currency",
-          path: "/masters/currency",
-          icon: "currency_exchange",
-        },
-        {
-          name: "Unit of Measurement",
-          path: "/masters/uom",
-          icon: "square_foot",
-        },
-        {
-          name: "Bank Maintenance",
-          path: "/masters/bank",
-          icon: "account_balance",
-        },
+        { name: "Customer / Supplier", path: "/masters/customers", icon: "people" },
+        { name: "Currency", path: "/masters/currency", icon: "currency_exchange" },
+        { name: "Unit of Measurement", path: "/masters/uom", icon: "square_foot" },
+        { name: "Bank Maintenance", path: "/masters/bank", icon: "account_balance" },
         { name: "Tax Maintenance", path: "/masters/tax", icon: "receipt_long" },
       ],
     },
+
+    // FREIGHT MASTER - NEW!
+    {
+      name: "Freight Master",
+      icon: "directions_boat",
+      isDropdown: true,
+      isOpen: freightOpen,
+      onToggle: () => setFreightOpen(!freightOpen),
+      subItems: [
+        { name: "Vessel Maintenance", path: "/freight/vessel", icon: "directions_boat_filled" },
+        // Add more later: Port, Carrier, Route, etc.
+      ],
+    },
+
     { name: "Reports", icon: "bar_chart", path: "/reports" },
     { name: "Users", icon: "manage_accounts", path: "/users" },
     { name: "Settings", icon: "settings", path: "/settings" },
   ];
 
+  // Auto-open dropdowns based on current path
   useEffect(() => {
     if (location.pathname.startsWith("/masters/")) {
       setMastersOpen(true);
     }
+    if (location.pathname.startsWith("/freight/")) {
+      setFreightOpen(true);
+    }
   }, [location.pathname]);
 
+  // Click outside to close sidebar
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -69,7 +78,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, toggleSidebar]);
 
+  // Check active parent for collapsed sidebar
   const isMasterFilesActive = location.pathname.startsWith("/masters/");
+  const isFreightActive = location.pathname.startsWith("/freight/");
 
   return (
     <div ref={sidebarRef} className={`sidebar ${isOpen ? "open" : "closed"}`}>
@@ -86,7 +97,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             {item.isDropdown ? (
               <div
                 className={`nav-item dropdown ${item.isOpen ? "open" : ""} ${
-                  !isOpen && isMasterFilesActive ? "active" : ""
+                  !isOpen &&
+                  ((item.name === "Master Files" && isMasterFilesActive) ||
+                    (item.name === "Freight Master" && isFreightActive))
+                    ? "active"
+                    : ""
                 }`}
                 onClick={item.onToggle}
               >
@@ -105,9 +120,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             ) : (
               <NavLink
                 to={item.path}
-                className={({ isActive }) =>
-                  `nav-item ${isActive ? "active" : ""}`
-                }
+                className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
                 onClick={() => window.innerWidth < 1024 && toggleSidebar()}
               >
                 <span className="material-symbols-rounded nav-icon">
@@ -117,15 +130,14 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               </NavLink>
             )}
 
+            {/* Submenu */}
             {item.isDropdown && item.isOpen && isOpen && (
               <div className="submenu">
                 {item.subItems.map((sub) => (
                   <NavLink
                     key={sub.name}
                     to={sub.path}
-                    className={({ isActive }) =>
-                      `submenu-item ${isActive ? "active" : ""}`
-                    }
+                    className={({ isActive }) => `submenu-item ${isActive ? "active" : ""}`}
                     onClick={() => window.innerWidth < 1024 && toggleSidebar()}
                   >
                     <span className="material-symbols-rounded submenu-icon">
