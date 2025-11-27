@@ -86,7 +86,7 @@ input::placeholder {
   flex-wrap: wrap;
 }
 
-.btn-edit {
+/* .btn-edit {
   background: linear-gradient(135deg, #ec4899, #d946ef);
   color: white;
   padding: 1.1rem 2.3rem;
@@ -105,7 +105,7 @@ input::placeholder {
   background: linear-gradient(135deg, #d946ef, #c026d3);
   transform: translateY(-5px);
   box-shadow: 0 15px 35px rgba(236, 72, 153, 0.45);
-}
+} */
 
 .btn-primary,
 .btn-secondary {
