@@ -94,12 +94,35 @@ const FlightMaintenance = () => {
     ).finally(() => setLoading(false));
   };
 
-  const handleCancel = () => {
-    setFormData({ flightNo: '', airlineName: '', airlineCode: '', localAgent: '' });
+const isFormEmpty = () => {
+  return (
+    !formData.flightNo.trim() &&
+    !formData.airlineName.trim() &&
+    !formData.airlineCode.trim() &&
+    !formData.localAgent.trim()
+  );
+};
+
+const handleCancel = () => {
+  if (!isFormEmpty()) {
+    // Clear form
+    setFormData({
+      flightNo: '',
+      airlineName: '',
+      airlineCode: '',
+      localAgent: ''
+    });
+
     setIsEditMode(false);
     setEditingId(null);
+
     toast.success('Form cleared');
-  };
+  } else {
+    // Redirect if nothing is typed
+    window.location.href = '/dashboard';
+  }
+};
+
 
   const openEditModal = async () => {
     await fetchFlights();
