@@ -9,6 +9,7 @@ import UnitOfMeasurementMaintenance from './pages/masters/UnitOfMeasurementMaint
 import BankMaintenance from './pages/masters/BankMaintenance.jsx'
 import TaxMaintenance  from './pages/masters/TaxMaintenance.jsx'
 import VesselMaintenance from './pages/Freight/VesselMaintenance.jsx'
+import FlightMaintenance from './pages/Freight/FlightMaintenance.jsx'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -37,6 +38,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
 
         <Route path="/freight/vessel" element={<VesselMaintenance />} />
+        <Route path='/freight/flight' element={<FlightMaintenance/>}/>
           
 
       </Routes>

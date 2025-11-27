@@ -42,8 +42,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       onToggle: () => setFreightOpen(!freightOpen),
       subItems: [
         { name: "Vessel Maintenance", path: "/freight/vessel", icon: "directions_boat_filled" },
-        // Add more later: Port, Carrier, Route, etc.
-      ],
+        { name: "Flight Maintenance", path: "/freight/flight", icon: "flight" },
+        ],
     },
 
     { name: "Reports", icon: "bar_chart", path: "/reports" },
