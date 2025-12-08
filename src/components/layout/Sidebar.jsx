@@ -11,11 +11,10 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   // Dropdown states
   const [mastersOpen, setMastersOpen] = useState(false);
   const [freightOpen, setFreightOpen] = useState(false);
+  const [seaJobsOpen, setSeaJobsOpen] = useState(false); // ← NEW: Sea Freight Jobs
 
   const menuItems = [
     { name: "Dashboard", icon: "dashboard", path: "/dashboard" },
-    { name: "Import Jobs", icon: "input", path: "/jobs/import" },
-    { name: "Export Jobs", icon: "output", path: "/jobs/export" },
 
     // MASTER FILES
     {
@@ -33,7 +32,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       ],
     },
 
-    // FREIGHT MASTER - NEW!
+    // FREIGHT MASTER
     {
       name: "Freight Master",
       icon: "directions_boat",
@@ -45,7 +44,36 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         { name: "Flight Maintenance", path: "/freight/flight", icon: "flight" },
         { name: "Sea Destination Maintenance", path: "/freight/sea-destination", icon: "anchor" },
         { name: "Air Destination Maintenance", path: "/freight/air-destination", icon: "flight" },
-        ],
+      ],
+    },
+
+    // NEW: SEA FREIGHT JOBS (with Import dropdown)
+    {
+      name: "Sea Freight Jobs",
+      icon: "anchor",
+      isDropdown: true,
+      isOpen: seaJobsOpen,
+      onToggle: () => setSeaJobsOpen(!seaJobsOpen),
+      subItems: [
+        {
+          name: "Import",
+          icon: "input",
+          isDropdown: true,
+          isOpen: seaJobsOpen, // reuse parent open state
+          onToggle: () => {}, // no action needed
+          subItems: [
+            // Your future Import Job pages will go here
+            // Example: { name: "Job Registration", path: "/sea-freight/import/job-registration", icon: "note_add" },
+          ]
+        },
+        // Export will be added later
+        // {
+        //   name: "Export",
+        //   icon: "output",
+        //   isDropdown: true,
+        //   subItems: []
+        // }
+      ]
     },
 
     { name: "Reports", icon: "bar_chart", path: "/reports" },
@@ -55,12 +83,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
   // Auto-open dropdowns based on current path
   useEffect(() => {
-    if (location.pathname.startsWith("/masters/")) {
-      setMastersOpen(true);
-    }
-    if (location.pathname.startsWith("/freight/")) {
-      setFreightOpen(true);
-    }
+    if (location.pathname.startsWith("/masters/")) setMastersOpen(true);
+    if (location.pathname.startsWith("/freight/")) setFreightOpen(true);
+    if (location.pathname.includes("/sea-freight/")) setSeaJobsOpen(true);
   }, [location.pathname]);
 
   // Click outside to close sidebar
@@ -80,9 +105,10 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, toggleSidebar]);
 
-  // Check active parent for collapsed sidebar
+  // Active state for collapsed sidebar
   const isMasterFilesActive = location.pathname.startsWith("/masters/");
   const isFreightActive = location.pathname.startsWith("/freight/");
+  const isSeaJobsActive = location.pathname.includes("/sea-freight/");
 
   return (
     <div ref={sidebarRef} className={`sidebar ${isOpen ? "open" : "closed"}`}>
@@ -101,7 +127,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 className={`nav-item dropdown ${item.isOpen ? "open" : ""} ${
                   !isOpen &&
                   ((item.name === "Master Files" && isMasterFilesActive) ||
-                    (item.name === "Freight Master" && isFreightActive))
+                    (item.name === "Freight Master" && isFreightActive) ||
+                    (item.name === "Sea Freight Jobs" && isSeaJobsActive))
                     ? "active"
                     : ""
                 }`}
@@ -136,17 +163,52 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             {item.isDropdown && item.isOpen && isOpen && (
               <div className="submenu">
                 {item.subItems.map((sub) => (
-                  <NavLink
-                    key={sub.name}
-                    to={sub.path}
-                    className={({ isActive }) => `submenu-item ${isActive ? "active" : ""}`}
-                    onClick={() => window.innerWidth < 1024 && toggleSidebar()}
-                  >
-                    <span className="material-symbols-rounded submenu-icon">
-                      {sub.icon}
-                    </span>
-                    <span className="submenu-text">{sub.name}</span>
-                  </NavLink>
+                  <div key={sub.name}>
+                    {sub.isDropdown ? (
+                      <div
+                        className={`submenu-item dropdown ${sub.isOpen ? "open" : ""}`}
+                        onClick={sub.onToggle}
+                      >
+                        <span className="material-symbols-rounded submenu-icon">
+                          {sub.icon}
+                        </span>
+                        <span className="submenu-text">{sub.name}</span>
+                        <span className="material-symbols-rounded dropdown-arrow small">
+                          {sub.isOpen ? "expand_less" : "expand_more"}
+                        </span>
+                      </div>
+                    ) : (
+                      <NavLink
+                        to={sub.path}
+                        className={({ isActive }) => `submenu-item ${isActive ? "active" : ""}`}
+                        onClick={() => window.innerWidth < 1024 && toggleSidebar()}
+                      >
+                        <span className="material-symbols-rounded submenu-icon">
+                          {sub.icon}
+                        </span>
+                        <span className="submenu-text">{sub.name}</span>
+                      </NavLink>
+                    )}
+
+                    {/* Nested submenu for Import */}
+                    {sub.isDropdown && sub.isOpen && isOpen && (
+                      <div className="nested-submenu">
+                        {sub.subItems.map((nested) => (
+                          <NavLink
+                            key={nested.name}
+                            to={nested.path}
+                            className={({ isActive }) => `nested-item ${isActive ? "active" : ""}`}
+                            onClick={() => window.innerWidth < 1024 && toggleSidebar()}
+                          >
+                            <span className="material-symbols-rounded nested-icon">
+                              {nested.icon}
+                            </span>
+                            <span className="nested-text">{nested.name}</span>
+                          </NavLink>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
