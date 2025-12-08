@@ -192,3 +192,41 @@
 .submenu-text {
   font-size: 0.95rem;
 }
+
+/* Nested submenu styling */
+.nested-submenu {
+  margin-left: 2.5rem;
+  border-left: 2px solid #3b82f6;
+  background: rgba(59, 130, 246, 0.03);
+}
+
+.nested-item {
+  padding: 0.7rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #64748b;
+  font-size: 0.92rem;
+  transition: all 0.3s ease;
+}
+
+.nested-item:hover {
+  background: rgba(59, 130, 246, 0.1);
+  color: #1e293b;
+  padding-left: 2rem;
+}
+
+.nested-item.active {
+  background: #3b82f6;
+  color: white;
+  font-weight: 600;
+}
+
+.nested-icon {
+  font-size: 1rem !important;
+}
+
+.dropdown-arrow.small {
+  font-size: 1rem !important;
+  margin-left: auto;
+}
