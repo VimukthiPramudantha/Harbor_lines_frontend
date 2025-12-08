@@ -11,7 +11,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   // Dropdown states
   const [mastersOpen, setMastersOpen] = useState(false);
   const [freightOpen, setFreightOpen] = useState(false);
-  const [seaJobsOpen, setSeaJobsOpen] = useState(false); // ← NEW: Sea Freight Jobs
+  const [seaJobsOpen, setSeaJobsOpen] = useState(false);
 
   const menuItems = [
     { name: "Dashboard", icon: "dashboard", path: "/dashboard" },
@@ -47,7 +47,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       ],
     },
 
-    // NEW: SEA FREIGHT JOBS (with Import dropdown)
+    // SEA FREIGHT JOBS
     {
       name: "Sea Freight Jobs",
       icon: "anchor",
@@ -59,20 +59,18 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           name: "Import",
           icon: "input",
           isDropdown: true,
-          isOpen: seaJobsOpen, // reuse parent open state
+          isOpen: seaJobsOpen,
           onToggle: () => {}, // no action needed
           subItems: [
-            // Your future Import Job pages will go here
-            // Example: { name: "Job Registration", path: "/sea-freight/import/job-registration", icon: "note_add" },
+            {
+              name: "Job Master - Import",
+              path: "/sea-freight/import/job-master",
+              icon: "note_add"
+            }
+            // Add more import pages here later
           ]
-        },
+        }
         // Export will be added later
-        // {
-        //   name: "Export",
-        //   icon: "output",
-        //   isDropdown: true,
-        //   subItems: []
-        // }
       ]
     },
 
@@ -85,7 +83,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   useEffect(() => {
     if (location.pathname.startsWith("/masters/")) setMastersOpen(true);
     if (location.pathname.startsWith("/freight/")) setFreightOpen(true);
-    if (location.pathname.includes("/sea-freight/")) setSeaJobsOpen(true);
+    if (location.pathname.startsWith("/sea-freight/")) setSeaJobsOpen(true);
   }, [location.pathname]);
 
   // Click outside to close sidebar
@@ -108,7 +106,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   // Active state for collapsed sidebar
   const isMasterFilesActive = location.pathname.startsWith("/masters/");
   const isFreightActive = location.pathname.startsWith("/freight/");
-  const isSeaJobsActive = location.pathname.includes("/sea-freight/");
+  const isSeaJobsActive = location.pathname.startsWith("/sea-freight/");
 
   return (
     <div ref={sidebarRef} className={`sidebar ${isOpen ? "open" : "closed"}`}>
