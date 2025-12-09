@@ -62,14 +62,14 @@
   gap: 10px;
 }
 
-.section h3::before {
+/* .section h3::before {
   content: "";
   display: inline-block;
   width: 8px;
   height: 8px;
   background: #3b82f6;
   border-radius: 50%;
-}
+} */
 
 .form-grid {
   display: grid;

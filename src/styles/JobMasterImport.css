@@ -246,7 +246,7 @@ input::placeholder {
   margin: 3rem 0;
 }
 
-/* Modal - Ocean Premium */
+/* Modal - Ocean Premium
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -287,7 +287,7 @@ input::placeholder {
   margin: 0;
   font-size: 1.9rem;
   font-weight: 800;
-}
+} */
 
 .close-btn {
   background: none;
@@ -309,7 +309,7 @@ input::placeholder {
   transform: rotate(90deg);
 }
 
-.modal-search {
+/* .modal-search {
   padding: 2rem 2.8rem;
   border-bottom: 1px solid #e2e8f0;
 }
@@ -364,7 +364,7 @@ input::placeholder {
   color: #3b82f6;
   font-size: 1.6rem;
   font-weight: bold;
-}
+} */
 
 /* Responsive */
 @media (max-width: 768px) {
