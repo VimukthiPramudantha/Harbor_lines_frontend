@@ -27,6 +27,22 @@ const JobMasterImport = () => {
   const [vesselSearch, setVesselSearch] = useState('');
   const [showVesselDropdown, setShowVesselDropdown] = useState(false);
 
+  // Auto-suggest states for Loading Vessel
+const [portDepartureSearch, setPortDepartureSearch] = useState('');
+const [showPortDepartureDropdown, setShowPortDepartureDropdown] = useState(false);
+
+const [portDischargeSearch, setPortDischargeSearch] = useState('');
+const [showPortDischargeDropdown, setShowPortDischargeDropdown] = useState(false);
+
+const [originAgentSearch, setOriginAgentSearch] = useState('');
+const [showOriginAgentDropdown, setShowOriginAgentDropdown] = useState(false);
+
+const [carrierSearch, setCarrierSearch] = useState('');
+const [showCarrierDropdown, setShowCarrierDropdown] = useState(false);
+
+const [shipAgentSearch, setShipAgentSearch] = useState('');
+const [showShipAgentDropdown, setShowShipAgentDropdown] = useState(false);
+
   const [formData, setFormData] = useState({
     jobNum: '', // ← Will be auto-generated
     jobDate: new Date().toISOString().slice(0,10),
@@ -265,6 +281,61 @@ const handleVesselSelect = (vessel) => {
   setVesselSearch(`${vessel.code} - ${vessel.name}`);
   setShowVesselDropdown(false);
 };
+
+// Port of Departure
+const handlePortDepartureSelect = (port) => {
+  setFormData(prev => ({
+    ...prev,
+    portDepartureId: port._id,
+    portDepartureName: port.name
+  }));
+  setPortDepartureSearch(`${port.code} - ${port.name}`);
+  setShowPortDepartureDropdown(false);
+};
+
+// Port of Discharge
+const handlePortDischargeSelect = (port) => {
+  setFormData(prev => ({
+    ...prev,
+    portDischargeId: port._id,
+    portDischargeName: port.name
+  }));
+  setPortDischargeSearch(`${port.code} - ${port.name}`);
+  setShowPortDischargeDropdown(false);
+};
+
+// Origin Agent
+const handleOriginAgentSelect = (agent) => {
+  setFormData(prev => ({
+    ...prev,
+    originAgentId: agent._id,
+    originAgentName: agent.name
+  }));
+  setOriginAgentSearch(`${agent.code} - ${agent.name}`);
+  setShowOriginAgentDropdown(false);
+};
+
+// Carrier
+const handleCarrierSelect = (carrier) => {
+  setFormData(prev => ({
+    ...prev,
+    carrierId: carrier._id,
+    carrierName: carrier.name
+  }));
+  setCarrierSearch(`${carrier.code} - ${carrier.name}`);
+  setShowCarrierDropdown(false);
+};
+
+// Ship Agent
+const handleShipAgentSelect = (agent) => {
+  setFormData(prev => ({
+    ...prev,
+    shipAgentId: agent._id,
+    shipAgentName: agent.name
+  }));
+  setShipAgentSearch(`${agent.code} - ${agent.name}`);
+  setShowShipAgentDropdown(false);
+};
   return (
     <div className="dashboard-layout">
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
@@ -383,77 +454,225 @@ const handleVesselSelect = (vessel) => {
                     </div>
                   </div>
 
-                {/* Loading Vessel */}
-                <div className="section">
-                  <h3>Loading Vessel</h3>
-                  <div className="form-grid">
-                    <div className="input-group">
-                      <label>Port of Departure ID</label>
-                      <select name="portDepartureId" value={formData.portDepartureId} onChange={handleChange} disabled={loading}>
-                        <option value="">Select Port</option>
-                        {seaDestinations.map(port => (
-                          <option key={port._id} value={port._id}>{port.code} - {port.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="input-group">
-                      <label>Port of Departure Name</label>
-                      <input name="portDepartureName" value={formData.portDepartureName} onChange={handleChange} disabled={loading} />
-                    </div>
-                    <div className="input-group">
-                      <label>Port of Discharge ID</label>
-                      <select name="portDischargeId" value={formData.portDischargeId} onChange={handleChange} disabled={loading}>
-                        <option value="">Select Port</option>
-                        {seaDestinations.map(port => (
-                          <option key={port._id} value={port._id}>{port.code} - {port.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="input-group">
-                      <label>Port of Discharge Name</label>
-                      <input name="portDischargeName" value={formData.portDischargeName} onChange={handleChange} disabled={loading} />
-                    </div>
-                    <div className="input-group">
-                      <label>Origin Agent ID</label>
-                      <select name="originAgentId" value={formData.originAgentId} onChange={handleChange} disabled={loading}>
-                        <option value="">Select Agent</option>
-                        {customers.map(cust => (
-                          <option key={cust._id} value={cust._id}>{cust.code} - {cust.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="input-group">
-                      <label>Origin Agent Name</label>
-                      <input name="originAgentName" value={formData.originAgentName} onChange={handleChange} disabled={loading} />
-                    </div>
-                    <div className="input-group">
-                      <label>Carrier ID</label>
-                      <select name="carrierId" value={formData.carrierId} onChange={handleChange} disabled={loading}>
-                        <option value="">Select Carrier</option>
-                        {customers.map(cust => (
-                          <option key={cust._id} value={cust._id}>{cust.code} - {cust.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="input-group">
-                      <label>Carrier Name</label>
-                      <input name="carrierName" value={formData.carrierName} onChange={handleChange} disabled={loading} />
-                    </div>
-                    <div className="input-group">
-                      <label>Ship Agent ID</label>
-                      <select name="shipAgentId" value={formData.shipAgentId} onChange={handleChange} disabled={loading}>
-                        <option value="">Select Agent</option>
-                        {customers.map(cust => (
-                          <option key={cust._id} value={cust._id}>{cust.code} - {cust.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="input-group">
-                      <label>Ship Agent Name</label>
-                      <input name="shipAgentName" value={formData.shipAgentName} onChange={handleChange} disabled={loading} />
+               {/* Loading Vessel - AUTO SUGGEST FOR ALL 5 FIELDS */}
+                  <div className="section">
+                    <h3>Loading Vessel</h3>
+                    <div className="form-grid">
+
+                      {/* Port of Departure */}
+                      <div className="input-group" style={{ position: 'relative' }}>
+                        <label>Port of Departure <span className="required">*</span></label>
+                        <input
+                          type="text"
+                          value={portDepartureSearch}
+                          onChange={(e) => {
+                            setPortDepartureSearch(e.target.value);
+                            setShowPortDepartureDropdown(true);
+                          }}
+                          onFocus={() => setShowPortDepartureDropdown(true)}
+                          placeholder="Type port code or name..."
+                          disabled={loading}
+                        />
+                        {showPortDepartureDropdown && (
+                          <div className="autocomplete-dropdown">
+                            {seaDestinations
+                              .filter(p => 
+                                p.code.toLowerCase().includes(portDepartureSearch.toLowerCase()) ||
+                                p.name.toLowerCase().includes(portDepartureSearch.toLowerCase())
+                              )
+                              .map(port => (
+                                <div
+                                  key={port._id}
+                                  className="autocomplete-item"
+                                  onClick={() => handlePortDepartureSelect(port)}
+                                >
+                                  <strong>{port.code}</strong> — {port.name}
+                                </div>
+                              ))
+                            }
+                            {showPortDepartureDropdown && seaDestinations.filter(p => 
+                              p.code.toLowerCase().includes(portDepartureSearch.toLowerCase()) ||
+                              p.name.toLowerCase().includes(portDepartureSearch.toLowerCase())
+                            ).length === 0 && (
+                              <div className="autocomplete-item no-result">No port found</div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="input-group">
+                        <label>Port of Departure Name</label>
+                        <input value={formData.portDepartureName} readOnly disabled style={{ backgroundColor: '#f0fdf4', color: '#166534', fontWeight: '600' }} />
+                      </div>
+
+                      {/* Port of Discharge */}
+                      <div className="input-group" style={{ position: 'relative' }}>
+                        <label>Port of Discharge <span className="required">*</span></label>
+                        <input
+                          type="text"
+                          value={portDischargeSearch}
+                          onChange={(e) => {
+                            setPortDischargeSearch(e.target.value);
+                            setShowPortDischargeDropdown(true);
+                          }}
+                          onFocus={() => setShowPortDischargeDropdown(true)}
+                          placeholder="Type port code or name..."
+                          disabled={loading}
+                        />
+                        {showPortDischargeDropdown && (
+                          <div className="autocomplete-dropdown">
+                            {seaDestinations
+                              .filter(p => 
+                                p.code.toLowerCase().includes(portDischargeSearch.toLowerCase()) ||
+                                p.name.toLowerCase().includes(portDischargeSearch.toLowerCase())
+                              )
+                              .map(port => (
+                                <div
+                                  key={port._id}
+                                  className="autocomplete-item"
+                                  onClick={() => handlePortDischargeSelect(port)}
+                                >
+                                  <strong>{port.code}</strong> — {port.name}
+                                </div>
+                              ))
+                            }
+                            {showPortDischargeDropdown && seaDestinations.filter(p => 
+                              p.code.toLowerCase().includes(portDischargeSearch.toLowerCase()) ||
+                              p.name.toLowerCase().includes(portDischargeSearch.toLowerCase())
+                            ).length === 0 && (
+                              <div className="autocomplete-item no-result">No port found</div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="input-group">
+                        <label>Port of Discharge Name</label>
+                        <input value={formData.portDischargeName} readOnly disabled style={{ backgroundColor: '#f0fdf4', color: '#166534', fontWeight: '600' }} />
+                      </div>
+
+                      {/* Origin Agent */}
+                      <div className="input-group" style={{ position: 'relative' }}>
+                        <label>Origin Agent</label>
+                        <input
+                          type="text"
+                          value={originAgentSearch}
+                          onChange={(e) => {
+                            setOriginAgentSearch(e.target.value);
+                            setShowOriginAgentDropdown(true);
+                          }}
+                          onFocus={() => setShowOriginAgentDropdown(true)}
+                          placeholder="Type agent code or name..."
+                          disabled={loading}
+                        />
+                        {showOriginAgentDropdown && (
+                          <div className="autocomplete-dropdown">
+                            {customers
+                              .filter(c => 
+                                c.code.toLowerCase().includes(originAgentSearch.toLowerCase()) ||
+                                c.name.toLowerCase().includes(originAgentSearch.toLowerCase())
+                              )
+                              .map(agent => (
+                                <div
+                                  key={agent._id}
+                                  className="autocomplete-item"
+                                  onClick={() => handleOriginAgentSelect(agent)}
+                                >
+                                  <strong>{agent.code}</strong> — {agent.name}
+                                </div>
+                              ))
+                            }
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="input-group">
+                        <label>Origin Agent Name</label>
+                        <input value={formData.originAgentName} readOnly disabled />
+                      </div>
+
+                      {/* Carrier */}
+                      <div className="input-group" style={{ position: 'relative' }}>
+                        <label>Carrier</label>
+                        <input
+                          type="text"
+                          value={carrierSearch}
+                          onChange={(e) => {
+                            setCarrierSearch(e.target.value);
+                            setShowCarrierDropdown(true);
+                          }}
+                          onFocus={() => setShowCarrierDropdown(true)}
+                          placeholder="Type carrier code or name..."
+                          disabled={loading}
+                        />
+                        {showCarrierDropdown && (
+                          <div className="autocomplete-dropdown">
+                            {customers
+                              .filter(c => 
+                                c.code.toLowerCase().includes(carrierSearch.toLowerCase()) ||
+                                c.name.toLowerCase().includes(carrierSearch.toLowerCase())
+                              )
+                              .map(carrier => (
+                                <div
+                                  key={carrier._id}
+                                  className="autocomplete-item"
+                                  onClick={() => handleCarrierSelect(carrier)}
+                                >
+                                  <strong>{carrier.code}</strong> — {carrier.name}
+                                </div>
+                              ))
+                            }
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="input-group">
+                        <label>Carrier Name</label>
+                        <input value={formData.carrierName} readOnly disabled style={{ fontWeight: '600' }} />
+                      </div>
+
+                      {/* Ship Agent */}
+                      <div className="input-group" style={{ position: 'relative' }}>
+                        <label>Ship Agent</label>
+                        <input
+                          type="text"
+                          value={shipAgentSearch}
+                          onChange={(e) => {
+                            setShipAgentSearch(e.target.value);
+                            setShowShipAgentDropdown(true);
+                          }}
+                          onFocus={() => setShowShipAgentDropdown(true)}
+                          placeholder="Type agent code or name..."
+                          disabled={loading}
+                        />
+                        {showShipAgentDropdown && (
+                          <div className="autocomplete-dropdown">
+                            {customers
+                              .filter(c => 
+                                c.code.toLowerCase().includes(shipAgentSearch.toLowerCase()) ||
+                                c.name.toLowerCase().includes(shipAgentSearch.toLowerCase())
+                              )
+                              .map(agent => (
+                                <div
+                                  key={agent._id}
+                                  className="autocomplete-item"
+                                  onClick={() => handleShipAgentSelect(agent)}
+                                >
+                                  <strong>{agent.code}</strong> — {agent.name}
+                                </div>
+                              ))
+                            }
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="input-group">
+                        <label>Ship Agent Name</label>
+                        <input value={formData.shipAgentName} readOnly disabled style={{  fontWeight: '600' }} />
+                      </div>
+
                     </div>
                   </div>
-                </div>
 
                 {/* Final Destination */}
                 <div className="section">
