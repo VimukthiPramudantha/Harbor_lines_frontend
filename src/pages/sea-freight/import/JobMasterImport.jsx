@@ -324,12 +324,12 @@ const handleVesselSelect = (vessel) => {
                   </div>
                 </div>
 
-               {/* Vessel Information - AUTO SUGGEST */}
+               {/* Vessel Information*/}
                   <div className="section">
                     <h3>Vessel Information</h3>
                     <div className="form-grid">
                       <div className="input-group" style={{ position: 'relative' }}>
-                        <label>Vessel <span className="required">*</span></label>
+                        <label>Vessel <span className="required"></span></label>
                         <input
                           type="text"
                           value={vesselSearch}
@@ -364,7 +364,6 @@ const handleVesselSelect = (vessel) => {
                         )}
                       </div>
 
-                      {/* Hidden fields to store actual data */}
                       <input type="hidden" name="vesselId" value={formData.vesselId} />
                       
                       <div className="input-group">
