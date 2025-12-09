@@ -33,6 +33,12 @@ const [showPortDepartureDropdown, setShowPortDepartureDropdown] = useState(false
 
 const [customerSuppliers, setCustomerSuppliers] = useState([]);
 
+const [principleCustomerSearch, setPrincipleCustomerSearch] = useState('');
+const [showPrincipleCustomerDropdown, setShowPrincipleCustomerDropdown] = useState(false);
+
+const [localAgentSearch, setLocalAgentSearch] = useState('');
+const [showLocalAgentDropdown, setShowLocalAgentDropdown] = useState(false);
+
 const [portDischargeSearch, setPortDischargeSearch] = useState('');
 const [showPortDischargeDropdown, setShowPortDischargeDropdown] = useState(false);
 
@@ -327,6 +333,28 @@ const handleCarrierSelect = (carrier) => {
   }));
   setCarrierSearch(`${carrier.code} - ${carrier.name}`);
   setShowCarrierDropdown(false);
+};
+
+// Principle Customer
+const handlePrincipleCustomerSelect = (cust) => {
+  setFormData(prev => ({
+    ...prev,
+    principleCustomerId: cust._id,
+    principleCustomerName: cust.name
+  }));
+  setPrincipleCustomerSearch(`${cust.code} - ${cust.name}`);
+  setShowPrincipleCustomerDropdown(false);
+};
+
+// Local Agent
+const handleLocalAgentSelect = (agent) => {
+  setFormData(prev => ({
+    ...prev,
+    localAgentId: agent._id,
+    localAgentName: agent.name
+  }));
+  setLocalAgentSearch(`${agent.code} - ${agent.name}`);
+  setShowLocalAgentDropdown(false);
 };
 
 // Ship Agent
@@ -721,38 +749,137 @@ const handleShipAgentSelect = (agent) => {
                     </div>
                   </div>
 
-                {/* Final Destination */}
-                <div className="section">
-                  <h3>Final Destination</h3>
-                  <div className="form-grid">
-                    <div className="input-group">
-                      <label>Principle Customer ID</label>
-                      <select name="principleCustomerId" value={formData.principleCustomerId} onChange={handleChange} disabled={loading}>
-                        <option value="">Select Customer</option>
-                        {customers.map(cust => (
-                          <option key={cust._id} value={cust._id}>{cust.code} - {cust.name}</option>
-                        ))}
-                      </select>
+               {/* Final Destination*/}
+                    <div className="section">
+                      <h3>Final Destination</h3>
+                      <div className="form-grid">
+
+                        {/* Principle Customer */}
+                        <div className="input-group" style={{ position: 'relative' }}>
+                          <label>Principle Customer</label>
+                          <input
+                            type="text"
+                            value={principleCustomerSearch}
+                            onChange={(e) => {
+                              setPrincipleCustomerSearch(e.target.value);
+                              setShowPrincipleCustomerDropdown(true);
+                            }}
+                            onFocus={() => setShowPrincipleCustomerDropdown(true)}
+                            placeholder="Type code or name..."
+                            disabled={loading}
+                          />
+                          {showPrincipleCustomerDropdown && (
+                            <div className="autocomplete-dropdown">
+                              {customerSuppliers
+                                .filter(c =>
+                                  c.code.toLowerCase().includes(principleCustomerSearch.toLowerCase()) ||
+                                  c.name.toLowerCase().includes(principleCustomerSearch.toLowerCase())
+                                )
+                                .map(cust => (
+                                  <div
+                                    key={cust._id}
+                                    className="autocomplete-item"
+                                    onClick={() => handlePrincipleCustomerSelect(cust)}
+                                  >
+                                    <strong>{cust.code}</strong> — {cust.name}
+                                    <span style={{
+                                      marginLeft: '12px',
+                                      padding: '2px 10px',
+                                      borderRadius: '12px',
+                                      fontSize: '0.75rem',
+                                      fontWeight: 'bold',
+                                      backgroundColor: cust.type === 'customer' ? '#d1fae5' : '#fee2e2',
+                                      color: cust.type === 'customer' ? '#059669' : '#dc2626'
+                                    }}>
+                                      {cust.type.toUpperCase()}
+                                    </span>
+                                  </div>
+                                ))
+                              }
+                              {showPrincipleCustomerDropdown && customerSuppliers.filter(c =>
+                                c.code.toLowerCase().includes(principleCustomerSearch.toLowerCase()) ||
+                                c.name.toLowerCase().includes(principleCustomerSearch.toLowerCase())
+                              ).length === 0 && (
+                                <div className="autocomplete-item no-result">No customer found</div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="input-group">
+                          <label>Principle Customer Name</label>
+                          <input 
+                            value={formData.principleCustomerName} 
+                            readOnly 
+                            disabled 
+                            style={{ backgroundColor: '#ecfdf5', color: '#065f46', fontWeight: '600' }} 
+                          />
+                        </div>
+
+                        {/* Local Agent */}
+                        <div className="input-group" style={{ position: 'relative' }}>
+                          <label>Local Agent</label>
+                          <input
+                            type="text"
+                            value={localAgentSearch}
+                            onChange={(e) => {
+                              setLocalAgentSearch(e.target.value);
+                              setShowLocalAgentDropdown(true);
+                            }}
+                            onFocus={() => setShowLocalAgentDropdown(true)}
+                            placeholder="Type code or name..."
+                            disabled={loading}
+                          />
+                          {showLocalAgentDropdown && (
+                            <div className="autocomplete-dropdown">
+                              {customerSuppliers
+                                .filter(c =>
+                                  c.code.toLowerCase().includes(localAgentSearch.toLowerCase()) ||
+                                  c.name.toLowerCase().includes(localAgentSearch.toLowerCase())
+                                )
+                                .map(agent => (
+                                  <div
+                                    key={agent._id}
+                                    className="autocomplete-item"
+                                    onClick={() => handleLocalAgentSelect(agent)}
+                                  >
+                                    <strong>{agent.code}</strong> — {agent.name}
+                                    <span style={{
+                                      marginLeft: '12px',
+                                      padding: '2px 10px',
+                                      borderRadius: '12px',
+                                      fontSize: '0.75rem',
+                                      fontWeight: 'bold',
+                                      backgroundColor: agent.type === 'customer' ? '#dbeafe' : '#fecaca',
+                                      color: agent.type === 'customer' ? '#1d4ed8' : '#991b1b'
+                                    }}>
+                                      {agent.type.toUpperCase()}
+                                    </span>
+                                  </div>
+                                ))
+                              }
+                              {showLocalAgentDropdown && customerSuppliers.filter(c =>
+                                c.code.toLowerCase().includes(localAgentSearch.toLowerCase()) ||
+                                c.name.toLowerCase().includes(localAgentSearch.toLowerCase())
+                              ).length === 0 && (
+                                <div className="autocomplete-item no-result">No agent found</div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="input-group">
+                          <label>Local Agent Name</label>
+                          <input 
+                            value={formData.localAgentName} 
+                            readOnly 
+                            disabled 
+                            style={{fontWeight: '600' }} 
+                          />
+                        </div>
+
                     </div>
-                    <div className="input-group">
-                      <label>Principle Customer Name</label>
-                      <input name="principleCustomerName" value={formData.principleCustomerName} onChange={handleChange} disabled={loading} />
                     </div>
-                    <div className="input-group">
-                      <label>Local Agent ID</label>
-                      <select name="localAgentId" value={formData.localAgentId} onChange={handleChange} disabled={loading}>
-                        <option value="">Select Agent</option>
-                        {customers.map(cust => (
-                          <option key={cust._id} value={cust._id}>{cust.code} - {cust.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="input-group">
-                      <label>Local Agent Name</label>
-                      <input name="localAgentName" value={formData.localAgentName} onChange={handleChange} disabled={loading} />
-                    </div>
-                  </div>
-                </div>
 
                 {/* Additional Fields */}
                 <div className="section">
