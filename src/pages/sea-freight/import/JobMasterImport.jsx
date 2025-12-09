@@ -24,7 +24,7 @@ const JobMasterImport = () => {
   const [customers, setCustomers] = useState([]);
 
   const [formData, setFormData] = useState({
-    jobNum: '',
+    jobNum: '', // ← Will be auto-generated
     jobDate: new Date().toISOString().slice(0,10),
     finalizeDate: new Date().toISOString().slice(0,10),
     jobCategory: 'Freight Forwarding',
@@ -74,7 +74,27 @@ const JobMasterImport = () => {
     fetchCurrencies();
     fetchSeaDestinations();
     fetchCustomers();
+    generateJobNumber(); // ← Auto-generate on page load
   }, []);
+
+  // Auto-generate Job Number: HBL/IMP/001, 002, etc.
+  const generateJobNumber = async () => {
+    if (isEditMode) return; // Don't generate in edit mode
+
+    try {
+      const res = await fetch(`${API_BASE}/getAllJobs`);
+      const data = await res.json();
+      if (data.success) {
+        const count = data.data.length;
+        const nextNum = String(count + 1).padStart(3, '0');
+        setFormData(prev => ({ ...prev, jobNum: `HBL/IMP/${nextNum}` }));
+      }
+    } catch (err) {
+      // Fallback if API fails
+      const nextNum = String(Math.floor(Math.random() * 900) + 100).padStart(3, '0');
+      setFormData(prev => ({ ...prev, jobNum: `HBL/IMP/${nextNum}` }));
+    }
+  };
 
   const toggleSidebar = () => {
     const newState = !sidebarOpen;
@@ -124,6 +144,7 @@ const JobMasterImport = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'jobNum') return;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -156,12 +177,12 @@ const JobMasterImport = () => {
         if (!data.success) throw new Error(data.message);
         fetchJobs();
         if (!isEditMode) {
-          setFormData({ 
-            ...formData, 
-            jobNum: '', 
+          generateJobNumber(); 
+          setFormData(prev => ({ 
+            ...prev, 
             jobDate: new Date().toISOString().slice(0,10), 
             finalizeDate: new Date().toISOString().slice(0,10) 
-          });
+          }));
         }
         setIsEditMode(false);
         setEditingId(null);
@@ -175,8 +196,11 @@ const JobMasterImport = () => {
   };
 
   const handleCancel = () => {
-    setFormData({
-      jobNum: '', jobDate: new Date().toISOString().slice(0,10), finalizeDate: new Date().toISOString().slice(0,10),
+    generateJobNumber(); 
+    setFormData(prev => ({
+      ...prev,
+      jobDate: new Date().toISOString().slice(0,10),
+      finalizeDate: new Date().toISOString().slice(0,10),
       jobCategory: 'Freight Forwarding',
       vesselId: '', vesselName: '', voyage: '',
       portDepartureId: '', portDepartureName: '', portDischargeId: '', portDischargeName: '',
@@ -185,7 +209,7 @@ const JobMasterImport = () => {
       etaDateTime: '', status: 'Active', loadingVoyage: '', lastPortEtd: '',
       cargoCategory: 'FCL', commodity: 'General Cargo', currency: '', exchangeRate: '',
       terminalRef: '', service: '', terminal: 'JCT', slpaReference: '', numContainers: '', impNo: ''
-    });
+    }));
     setIsEditMode(false);
     setEditingId(null);
     toast.success('Form cleared');
@@ -230,11 +254,20 @@ const JobMasterImport = () => {
                   <h3>Job Information</h3>
                   <div className="form-grid">
                     <div className="input-group">
-                      <label>Job Num <span className="required">*</span></label>
-                      <input name="jobNum" value={formData.jobNum} onChange={handleChange} required disabled={loading} />
+                      <label>Job Num <span className="required"></span></label>
+                      <input 
+                        value={formData.jobNum} 
+                        readOnly 
+                        disabled 
+                        style={{ backgroundColor: '#f1f5f9', fontWeight: 'bold', color: '#000000ff' }}
+                        placeholder="Auto-generated"
+                      />
+                      <small style={{ color: '#64748b', marginTop: '4px' }}>
+                        Auto-generated
+                      </small>
                     </div>
                     <div className="input-group">
-                      <label>Job Date <span className="required">*</span></label>
+                      <label>Job Date <span className="required"></span></label>
                       <input type="date" name="jobDate" value={formData.jobDate} onChange={handleChange} required disabled={loading} />
                     </div>
                     <div className="input-group">
@@ -249,7 +282,7 @@ const JobMasterImport = () => {
                   <h3>Job Category</h3>
                   <div className="form-grid">
                     <div className="input-group">
-                      <label>Category <span className="required">*</span></label>
+                      <label>Category <span className="required"></span></label>
                       <select name="jobCategory" value={formData.jobCategory} onChange={handleChange} disabled={loading}>
                         {jobCategories.map(cat => (
                           <option key={cat} value={cat}>{cat}</option>
