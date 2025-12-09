@@ -31,6 +31,8 @@ const JobMasterImport = () => {
 const [portDepartureSearch, setPortDepartureSearch] = useState('');
 const [showPortDepartureDropdown, setShowPortDepartureDropdown] = useState(false);
 
+const [customerSuppliers, setCustomerSuppliers] = useState([]);
+
 const [portDischargeSearch, setPortDischargeSearch] = useState('');
 const [showPortDischargeDropdown, setShowPortDischargeDropdown] = useState(false);
 
@@ -93,14 +95,13 @@ const [showShipAgentDropdown, setShowShipAgentDropdown] = useState(false);
     fetchJobs();
     fetchCurrencies();
     fetchSeaDestinations();
-    fetchCustomers();
+    fetchCustomerSuppliers();
     generateJobNumber(); 
     fetchVessels(); 
   }, []);
 
-  // Auto-generate Job Number: HBL/IMP/001, 002, etc.
   const generateJobNumber = async () => {
-    if (isEditMode) return; // Don't generate in edit mode
+    if (isEditMode) return;
 
     try {
       const res = await fetch(`${API_BASE}/getAllJobs`);
@@ -153,15 +154,17 @@ const [showShipAgentDropdown, setShowShipAgentDropdown] = useState(false);
     }
   };
 
-  const fetchCustomers = async () => {
-    try {
-      const res = await fetch('http://localhost:5000/api/customersuppliers/getAllCustomerSuppliers?type=customer');
-      const data = await res.json();
-      if (data.success) setCustomers(data.data);
-    } catch (err) {
-      toast.error('Failed to load customers');
+const fetchCustomerSuppliers = async () => {
+  try {
+    const res = await fetch('http://localhost:5000/api/customersuppliers/getAllCustomerSuppliers');
+    const data = await res.json();
+    if (data.success) {
+      setCustomerSuppliers(data.data);
     }
-  };
+  } catch (err) {
+    toast.error('Failed to load agents & carriers');
+  }
+};
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -454,14 +457,14 @@ const handleShipAgentSelect = (agent) => {
                     </div>
                   </div>
 
-               {/* Loading Vessel - AUTO SUGGEST FOR ALL 5 FIELDS */}
+              {/* Loading Vessel*/}
                   <div className="section">
                     <h3>Loading Vessel</h3>
                     <div className="form-grid">
 
                       {/* Port of Departure */}
                       <div className="input-group" style={{ position: 'relative' }}>
-                        <label>Port of Departure <span className="required">*</span></label>
+                        <label>Port of Departure <span className="required"></span></label>
                         <input
                           type="text"
                           value={portDepartureSearch}
@@ -476,7 +479,7 @@ const handleShipAgentSelect = (agent) => {
                         {showPortDepartureDropdown && (
                           <div className="autocomplete-dropdown">
                             {seaDestinations
-                              .filter(p => 
+                              .filter(p =>
                                 p.code.toLowerCase().includes(portDepartureSearch.toLowerCase()) ||
                                 p.name.toLowerCase().includes(portDepartureSearch.toLowerCase())
                               )
@@ -490,7 +493,7 @@ const handleShipAgentSelect = (agent) => {
                                 </div>
                               ))
                             }
-                            {showPortDepartureDropdown && seaDestinations.filter(p => 
+                            {showPortDepartureDropdown && seaDestinations.filter(p =>
                               p.code.toLowerCase().includes(portDepartureSearch.toLowerCase()) ||
                               p.name.toLowerCase().includes(portDepartureSearch.toLowerCase())
                             ).length === 0 && (
@@ -499,15 +502,14 @@ const handleShipAgentSelect = (agent) => {
                           </div>
                         )}
                       </div>
-
                       <div className="input-group">
                         <label>Port of Departure Name</label>
-                        <input value={formData.portDepartureName} readOnly disabled style={{ backgroundColor: '#f0fdf4', color: '#166534', fontWeight: '600' }} />
+                        <input value={formData.portDepartureName} readOnly disabled style={{ fontWeight: '600' }} />
                       </div>
 
                       {/* Port of Discharge */}
                       <div className="input-group" style={{ position: 'relative' }}>
-                        <label>Port of Discharge <span className="required">*</span></label>
+                        <label>Port of Discharge <span className="required"></span></label>
                         <input
                           type="text"
                           value={portDischargeSearch}
@@ -522,7 +524,7 @@ const handleShipAgentSelect = (agent) => {
                         {showPortDischargeDropdown && (
                           <div className="autocomplete-dropdown">
                             {seaDestinations
-                              .filter(p => 
+                              .filter(p =>
                                 p.code.toLowerCase().includes(portDischargeSearch.toLowerCase()) ||
                                 p.name.toLowerCase().includes(portDischargeSearch.toLowerCase())
                               )
@@ -536,7 +538,7 @@ const handleShipAgentSelect = (agent) => {
                                 </div>
                               ))
                             }
-                            {showPortDischargeDropdown && seaDestinations.filter(p => 
+                            {showPortDischargeDropdown && seaDestinations.filter(p =>
                               p.code.toLowerCase().includes(portDischargeSearch.toLowerCase()) ||
                               p.name.toLowerCase().includes(portDischargeSearch.toLowerCase())
                             ).length === 0 && (
@@ -545,13 +547,11 @@ const handleShipAgentSelect = (agent) => {
                           </div>
                         )}
                       </div>
-
                       <div className="input-group">
                         <label>Port of Discharge Name</label>
-                        <input value={formData.portDischargeName} readOnly disabled style={{ backgroundColor: '#f0fdf4', color: '#166534', fontWeight: '600' }} />
+                        <input value={formData.portDischargeName} readOnly disabled style={{fontWeight: '600' }} />
                       </div>
 
-                      {/* Origin Agent */}
                       <div className="input-group" style={{ position: 'relative' }}>
                         <label>Origin Agent</label>
                         <input
@@ -562,13 +562,13 @@ const handleShipAgentSelect = (agent) => {
                             setShowOriginAgentDropdown(true);
                           }}
                           onFocus={() => setShowOriginAgentDropdown(true)}
-                          placeholder="Type agent code or name..."
+                          placeholder="Type code or name..."
                           disabled={loading}
                         />
                         {showOriginAgentDropdown && (
                           <div className="autocomplete-dropdown">
-                            {customers
-                              .filter(c => 
+                            {customerSuppliers
+                              .filter(c =>
                                 c.code.toLowerCase().includes(originAgentSearch.toLowerCase()) ||
                                 c.name.toLowerCase().includes(originAgentSearch.toLowerCase())
                               )
@@ -579,19 +579,34 @@ const handleShipAgentSelect = (agent) => {
                                   onClick={() => handleOriginAgentSelect(agent)}
                                 >
                                   <strong>{agent.code}</strong> — {agent.name}
+                                  <span style={{
+                                    marginLeft: '12px',
+                                    padding: '2px 10px',
+                                    borderRadius: '12px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 'bold',
+                                    backgroundColor: agent.type === 'customer' ? '#d1fae5' : '#fee2e2',
+                                    color: agent.type === 'customer' ? '#059669' : '#dc2626'
+                                  }}>
+                                    {agent.type.toUpperCase()}
+                                  </span>
                                 </div>
                               ))
                             }
+                            {showOriginAgentDropdown && customerSuppliers.filter(c =>
+                              c.code.toLowerCase().includes(originAgentSearch.toLowerCase()) ||
+                              c.name.toLowerCase().includes(originAgentSearch.toLowerCase())
+                            ).length === 0 && (
+                              <div className="autocomplete-item no-result">No agent found</div>
+                            )}
                           </div>
                         )}
                       </div>
-
                       <div className="input-group">
                         <label>Origin Agent Name</label>
-                        <input value={formData.originAgentName} readOnly disabled />
+                        <input value={formData.originAgentName} readOnly disabled style={{fontWeight: '600' }} />
                       </div>
 
-                      {/* Carrier */}
                       <div className="input-group" style={{ position: 'relative' }}>
                         <label>Carrier</label>
                         <input
@@ -602,13 +617,13 @@ const handleShipAgentSelect = (agent) => {
                             setShowCarrierDropdown(true);
                           }}
                           onFocus={() => setShowCarrierDropdown(true)}
-                          placeholder="Type carrier code or name..."
+                          placeholder="Type code or name..."
                           disabled={loading}
                         />
                         {showCarrierDropdown && (
                           <div className="autocomplete-dropdown">
-                            {customers
-                              .filter(c => 
+                            {customerSuppliers
+                              .filter(c =>
                                 c.code.toLowerCase().includes(carrierSearch.toLowerCase()) ||
                                 c.name.toLowerCase().includes(carrierSearch.toLowerCase())
                               )
@@ -619,19 +634,35 @@ const handleShipAgentSelect = (agent) => {
                                   onClick={() => handleCarrierSelect(carrier)}
                                 >
                                   <strong>{carrier.code}</strong> — {carrier.name}
+                                  <span style={{
+                                    marginLeft: '12px',
+                                    padding: '2px 10px',
+                                    borderRadius: '12px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 'bold',
+                                    backgroundColor: carrier.type === 'customer' ? '#dbeafe' : '#fecaca',
+                                    color: carrier.type === 'customer' ? '#1d4ed8' : '#991b1b'
+                                  }}>
+                                    {carrier.type.toUpperCase()}
+                                  </span>
                                 </div>
                               ))
                             }
+                            {showCarrierDropdown && customerSuppliers.filter(c =>
+                              c.code.toLowerCase().includes(carrierSearch.toLowerCase()) ||
+                              c.name.toLowerCase().includes(carrierSearch.toLowerCase())
+                            ).length === 0 && (
+                              <div className="autocomplete-item no-result">No carrier found</div>
+                            )}
                           </div>
                         )}
                       </div>
-
                       <div className="input-group">
                         <label>Carrier Name</label>
-                        <input value={formData.carrierName} readOnly disabled style={{ fontWeight: '600' }} />
+                        <input value={formData.carrierName} readOnly disabled style={{fontWeight: '600' }} />
                       </div>
 
-                      {/* Ship Agent */}
+                      {/* Ship Agent - NOW SHOWS CUSTOMERS + SUPPLIERS */}
                       <div className="input-group" style={{ position: 'relative' }}>
                         <label>Ship Agent</label>
                         <input
@@ -642,13 +673,13 @@ const handleShipAgentSelect = (agent) => {
                             setShowShipAgentDropdown(true);
                           }}
                           onFocus={() => setShowShipAgentDropdown(true)}
-                          placeholder="Type agent code or name..."
+                          placeholder="Type code or name..."
                           disabled={loading}
                         />
                         {showShipAgentDropdown && (
                           <div className="autocomplete-dropdown">
-                            {customers
-                              .filter(c => 
+                            {customerSuppliers
+                              .filter(c =>
                                 c.code.toLowerCase().includes(shipAgentSearch.toLowerCase()) ||
                                 c.name.toLowerCase().includes(shipAgentSearch.toLowerCase())
                               )
@@ -659,16 +690,32 @@ const handleShipAgentSelect = (agent) => {
                                   onClick={() => handleShipAgentSelect(agent)}
                                 >
                                   <strong>{agent.code}</strong> — {agent.name}
+                                  <span style={{
+                                    marginLeft: '12px',
+                                    padding: '2px 10px',
+                                    borderRadius: '12px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 'bold',
+                                    backgroundColor: agent.type === 'customer' ? '#e0e7ff' : '#fce7f3',
+                                    color: agent.type === 'customer' ? '#4338ca' : '#be123c'
+                                  }}>
+                                    {agent.type.toUpperCase()}
+                                  </span>
                                 </div>
                               ))
                             }
+                            {showShipAgentDropdown && customerSuppliers.filter(c =>
+                              c.code.toLowerCase().includes(shipAgentSearch.toLowerCase()) ||
+                              c.name.toLowerCase().includes(shipAgentSearch.toLowerCase())
+                            ).length === 0 && (
+                              <div className="autocomplete-item no-result">No agent found</div>
+                            )}
                           </div>
                         )}
                       </div>
-
                       <div className="input-group">
                         <label>Ship Agent Name</label>
-                        <input value={formData.shipAgentName} readOnly disabled style={{  fontWeight: '600' }} />
+                        <input value={formData.shipAgentName} readOnly disabled style={{fontWeight: '600' }} />
                       </div>
 
                     </div>
