@@ -374,3 +374,45 @@ input::placeholder {
   .btn-primary, .btn-secondary, .btn-edit { width: 100%; }
   .modal-content { width: 96%; border-radius: 24px; }
 }
+
+/* Auto-suggest Dropdown */
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 18px 18px;
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.autocomplete-item {
+  padding: 1rem 1.4rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.98rem;
+}
+
+.autocomplete-item:hover {
+  background: #f0f9ff;
+  padding-left: 1.8rem;
+  border-left: 4px solid #3b82f6;
+}
+
+.autocomplete-item.no-result {
+  color: #94a3b8;
+  font-style: italic;
+  cursor: default;
+}
+
+.autocomplete-item.no-result:hover {
+  background: none;
+  padding-left: 1.4rem;
+  border-left: none;
+}

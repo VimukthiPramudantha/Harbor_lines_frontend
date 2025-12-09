@@ -23,6 +23,10 @@ const JobMasterImport = () => {
   const [seaDestinations, setSeaDestinations] = useState([]);
   const [customers, setCustomers] = useState([]);
 
+  const [vessels, setVessels] = useState([]);
+  const [vesselSearch, setVesselSearch] = useState('');
+  const [showVesselDropdown, setShowVesselDropdown] = useState(false);
+
   const [formData, setFormData] = useState({
     jobNum: '', // ← Will be auto-generated
     jobDate: new Date().toISOString().slice(0,10),
@@ -74,7 +78,8 @@ const JobMasterImport = () => {
     fetchCurrencies();
     fetchSeaDestinations();
     fetchCustomers();
-    generateJobNumber(); // ← Auto-generate on page load
+    generateJobNumber(); 
+    fetchVessels(); 
   }, []);
 
   // Auto-generate Job Number: HBL/IMP/001, 002, etc.
@@ -233,6 +238,33 @@ const JobMasterImport = () => {
     j.jobNum.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Fetch Vessels from database
+const fetchVessels = async () => {
+  try {
+    const res = await fetch('http://localhost:5000/api/vessels/getAllVessels');
+    const data = await res.json();
+    if (data.success) setVessels(data.data);
+  } catch (err) {
+    toast.error('Failed to load vessels');
+  }
+};
+
+// Filter vessels for dropdown
+const filteredVessels = vessels.filter(v =>
+  v.code.toLowerCase().includes(vesselSearch.toLowerCase()) ||
+  v.name.toLowerCase().includes(vesselSearch.toLowerCase())
+);
+
+// Handle vessel selection
+const handleVesselSelect = (vessel) => {
+  setFormData(prev => ({
+    ...prev,
+    vesselId: vessel._id,
+    vesselName: vessel.name
+  }));
+  setVesselSearch(`${vessel.code} - ${vessel.name}`);
+  setShowVesselDropdown(false);
+};
   return (
     <div className="dashboard-layout">
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
@@ -292,24 +324,65 @@ const JobMasterImport = () => {
                   </div>
                 </div>
 
-                {/* Vessel Info */}
-                <div className="section">
-                  <h3>Vessel Information</h3>
-                  <div className="form-grid">
-                    <div className="input-group">
-                      <label>Vessel ID</label>
-                      <input name="vesselId" value={formData.vesselId} onChange={handleChange} disabled={loading} />
-                    </div>
-                    <div className="input-group">
-                      <label>Vessel Name</label>
-                      <input name="vesselName" value={formData.vesselName} onChange={handleChange} disabled={loading} />
-                    </div>
-                    <div className="input-group">
-                      <label>Voyage</label>
-                      <input name="voyage" value={formData.voyage} onChange={handleChange} disabled={loading} />
+               {/* Vessel Information - AUTO SUGGEST */}
+                  <div className="section">
+                    <h3>Vessel Information</h3>
+                    <div className="form-grid">
+                      <div className="input-group" style={{ position: 'relative' }}>
+                        <label>Vessel <span className="required">*</span></label>
+                        <input
+                          type="text"
+                          value={vesselSearch}
+                          onChange={(e) => {
+                            setVesselSearch(e.target.value);
+                            setShowVesselDropdown(true);
+                          }}
+                          onFocus={() => setShowVesselDropdown(true)}
+                          placeholder="Type vessel code or name..."
+                          disabled={loading}
+                          style={{ backgroundColor: '#fff' }}
+                        />
+                        {/* Dropdown */}
+                        {showVesselDropdown && filteredVessels.length > 0 && (
+                          <div className="autocomplete-dropdown">
+                            {filteredVessels.map(vessel => (
+                              <div
+                                key={vessel._id}
+                                className="autocomplete-item"
+                                onClick={() => handleVesselSelect(vessel)}
+                              >
+                                <strong>{vessel.code}</strong> — {vessel.name}
+                                {vessel.country && <span style={{ marginLeft: '8px', color: '#64748b', fontSize: '0.9em' }}>• {vessel.country}</span>}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {showVesselDropdown && filteredVessels.length === 0 && vesselSearch && (
+                          <div className="autocomplete-dropdown">
+                            <div className="autocomplete-item no-result">No vessel found</div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Hidden fields to store actual data */}
+                      <input type="hidden" name="vesselId" value={formData.vesselId} />
+                      
+                      <div className="input-group">
+                        <label>Vessel Name</label>
+                        <input
+                          value={formData.vesselName}
+                          readOnly
+                          disabled
+                          style={{ backgroundColor: '#f1f5f9', fontWeight: '600', color: '#1e40af' }}
+                        />
+                      </div>
+
+                      <div className="input-group">
+                        <label>Voyage</label>
+                        <input name="voyage" value={formData.voyage} onChange={handleChange} disabled={loading} />
+                      </div>
                     </div>
                   </div>
-                </div>
 
                 {/* Loading Vessel */}
                 <div className="section">
