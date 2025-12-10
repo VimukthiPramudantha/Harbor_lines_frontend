@@ -1,17 +1,19 @@
-// frontend/src/pages/sea-freight/import/PortOfLoadingInfo.jsx
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 const PortOfLoadingInfo = ({ formData, setFormData, onNext, onPrevious }) => {
   const [loading, setLoading] = useState(false);
   const [seaDestinations, setSeaDestinations] = useState([]);
-  
+
   // Auto-suggest states
-  const [portSearch, setPortSearch] = useState('');
+  const [portSearch, setPortSearch] = useState(formData.portOfLoadingName || '');
   const [showPortDropdown, setShowPortDropdown] = useState(false);
 
   useEffect(() => {
     fetchSeaDestinations();
+    // initialize local portSearch from formData if present
+    setPortSearch(formData.portOfLoadingName || '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchSeaDestinations = async () => {
@@ -86,11 +88,11 @@ const PortOfLoadingInfo = ({ formData, setFormData, onNext, onPrevious }) => {
 
         <div className="input-group">
           <label>Port of Loading Name</label>
-          <input 
-            value={formData.portOfLoadingName} 
-            readOnly 
-            disabled 
-            style={{ backgroundColor: '#ecfdf5', color: '#065f46', fontWeight: '600' }} 
+          <input
+            value={formData.portOfLoadingName || ''}
+            readOnly
+            disabled
+            style={{ backgroundColor: '#ecfdf5', color: '#065f46', fontWeight: '600' }}
           />
         </div>
 
@@ -114,7 +116,7 @@ const PortOfLoadingInfo = ({ formData, setFormData, onNext, onPrevious }) => {
         </button>
 
         <button type="button" className="btn-primary" onClick={handleNext}>
-          Save & Next →
+          Save & Finish
         </button>
       </div>
     </div>
