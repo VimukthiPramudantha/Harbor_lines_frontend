@@ -1,11 +1,12 @@
-// frontend/src/pages/sea-freight/import/JobMasterImport.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Sidebar from '../../../components/layout/Sidebar.jsx';
 import Navbar from '../../../components/layout/Navbar.jsx';
 import toast from 'react-hot-toast';
 import '../../../styles/JobMasterImport.css';
+import PortOfLoadingInfo from './PortOfLoadingInfo.jsx';
 
 const API_BASE = 'http://localhost:5000/api/jobs/sea-import';
+const DRAFT_KEY = 'importJobDraft_v1';
 
 const JobMasterImport = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -17,15 +18,13 @@ const JobMasterImport = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Wizard step control
-  const [currentStep, setCurrentStep] = useState(1); // 1 = Main Form, 2 = Port of Loading
+  const [currentStep, setCurrentStep] = useState(1); 
 
   const [currencies, setCurrencies] = useState([]);
   const [seaDestinations, setSeaDestinations] = useState([]);
   const [customerSuppliers, setCustomerSuppliers] = useState([]);
   const [vessels, setVessels] = useState([]);
 
-  // Auto-suggest states
   const [vesselSearch, setVesselSearch] = useState('');
   const [showVesselDropdown, setShowVesselDropdown] = useState(false);
 
@@ -50,11 +49,10 @@ const JobMasterImport = () => {
   const [localAgentSearch, setLocalAgentSearch] = useState('');
   const [showLocalAgentDropdown, setShowLocalAgentDropdown] = useState(false);
 
-  // Port of Loading
   const [portOfLoadingSearch, setPortOfLoadingSearch] = useState('');
   const [showPortOfLoadingDropdown, setShowPortOfLoadingDropdown] = useState(false);
 
-  const [formData, setFormData] = useState({
+  const initialForm = {
     jobNum: '',
     jobDate: new Date().toISOString().slice(0, 10),
     finalizeDate: new Date().toISOString().slice(0, 10),
@@ -93,7 +91,9 @@ const JobMasterImport = () => {
     portOfLoadingId: '',
     portOfLoadingName: '',
     mblNumber: ''
-  });
+  };
+
+  const [formData, setFormData] = useState(initialForm);
 
   const jobCategories = ['SOC', 'Freight Forwarding', 'Car Carrier', 'Casual Caller', 'Transhipment', 'Main Line', 'FF + Clearing', 'NVOCC'];
   const cargoCategories = ['Console', 'Co-loads', 'FCL'];
@@ -101,15 +101,38 @@ const JobMasterImport = () => {
   const terminals = ['JCT', 'UCT', 'SAGT', 'CICT', 'CWIT'];
 
   useEffect(() => {
-    const saved = localStorage.getItem('sidebarOpen');
-    if (saved !== null) setSidebarOpen(JSON.parse(saved));
+    const savedSidebar = localStorage.getItem('sidebarOpen');
+    if (savedSidebar !== null) setSidebarOpen(JSON.parse(savedSidebar));
+
     fetchJobs();
     fetchCurrencies();
     fetchSeaDestinations();
     fetchCustomerSuppliers();
     fetchVessels();
     generateJobNumber();
+
+    const draft = sessionStorage.getItem(DRAFT_KEY);
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft);
+        setFormData(prev => ({ ...initialForm, ...parsed }));
+        if (parsed.vesselName) setVesselSearch(parsed.vesselName);
+        if (parsed.portOfLoadingName) setPortOfLoadingSearch(parsed.portOfLoadingName);
+      } catch (err) {
+        console.warn('Failed to parse draft', err);
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      try {
+        sessionStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
+      } catch (err) {
+        console.warn('Could not save draft', err);
+      }
+    }
+  }, [formData, loading]);
 
   const generateJobNumber = async () => {
     if (isEditMode) return;
@@ -244,6 +267,37 @@ const JobMasterImport = () => {
     setShowPortOfLoadingDropdown(false);
   };
 
+  // Define filteredVessels (fixes the blank page bug)
+  const filteredVessels = vessels.filter(v =>
+    `${v.code} ${v.name}`.toLowerCase().includes(vesselSearch.toLowerCase())
+  );
+
+  // === STEP NAVIGATION & VALIDATION ===
+  const handleStep1Next = () => {
+    // Minimal validation for Step 1: require vessel, port departure, port discharge
+    if (!formData.vesselId) {
+      toast.error('Please select a Vessel before continuing.');
+      return;
+    }
+    if (!formData.portDepartureId) {
+      toast.error('Please select Port of Departure before continuing.');
+      return;
+    }
+    if (!formData.portDischargeId) {
+      toast.error('Please select Port of Discharge before continuing.');
+      return;
+    }
+
+    // Save (already autosaved) but ensure sessionStorage has the latest
+    try {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
+    } catch (err) {
+      console.warn('Could not save draft', err);
+    }
+
+    setCurrentStep(2);
+  };
+
   // FINAL SAVE - Only called from Step 2
   const handleFinalSave = async () => {
     if (!formData.portOfLoadingId || !formData.mblNumber) {
@@ -256,61 +310,47 @@ const JobMasterImport = () => {
     const url = isEditMode ? `${API_BASE}/updateJob/${editingId}` : `${API_BASE}/createJob`;
     const method = isEditMode ? 'PUT' : 'POST';
 
-    toast.promise(
-      fetch(url, {
+    try {
+      const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
-      })
-        .then(res => {
-          if (!res.ok) throw new Error('Failed');
-          return res.json();
-        })
-        .then(data => {
-          if (!data.success) throw new Error(data.message);
-          fetchJobs();
-          toast.success(isEditMode ? 'Job updated!' : 'Job created successfully!');
-          // Reset form & go back to Step 1
-          generateJobNumber();
-          setFormData(prev => ({
-            ...prev,
-            jobDate: new Date().toISOString().slice(0, 10),
-            finalizeDate: new Date().toISOString().slice(0, 10),
-            portOfLoadingId: '',
-            portOfLoadingName: '',
-            mblNumber: ''
-          }));
-          setCurrentStep(1);
-          setIsEditMode(false);
-          setEditingId(null);
-        }),
-      {
-        loading: 'Creating job...',
-        success: 'Job created!',
-        error: 'Failed to create job'
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || 'Failed');
       }
-    ).finally(() => setLoading(false));
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || 'Failed');
+
+      await fetchJobs();
+      toast.success(isEditMode ? 'Job updated!' : 'Job created successfully!');
+
+      // Reset form & go back to Step 1
+      generateJobNumber();
+      setFormData(initialForm);
+      sessionStorage.removeItem(DRAFT_KEY);
+      setCurrentStep(1);
+      setIsEditMode(false);
+      setEditingId(null);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to create/update job');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
     generateJobNumber();
-    setFormData({
-      jobNum: '',
-      jobDate: new Date().toISOString().slice(0, 10),
-      finalizeDate: new Date().toISOString().slice(0, 10),
-      jobCategory: 'Freight Forwarding',
-      vesselId: '', vesselName: '', voyage: '',
-      portDepartureId: '', portDepartureName: '', portDischargeId: '', portDischargeName: '',
-      originAgentId: '', originAgentName: '', carrierId: '', carrierName: '', shipAgentId: '', shipAgentName: '',
-      principleCustomerId: '', principleCustomerName: '', localAgentId: '', localAgentName: '',
-      etaDateTime: '', status: 'Active', loadingVoyage: '', lastPortEtd: '',
-      cargoCategory: 'FCL', commodity: 'General Cargo', currency: '', exchangeRate: '',
-      terminalRef: '', service: '', terminal: 'JCT', slpaReference: '', numContainers: '', impNo: '',
-      portOfLoadingId: '', portOfLoadingName: '', mblNumber: ''
-    });
+    setFormData(initialForm);
+    sessionStorage.removeItem(DRAFT_KEY);
     setCurrentStep(1);
     setIsEditMode(false);
     setEditingId(null);
+    setVesselSearch('');
+    setPortDepartureSearch('');
+    setPortDischargeSearch('');
     toast.success('Form cleared');
   };
 
@@ -326,6 +366,8 @@ const JobMasterImport = () => {
     setEditingId(job._id);
     setShowEditModal(false);
     toast.success('Job loaded for editing');
+    // set step to 1 so user can edit main data first
+    setCurrentStep(1);
   };
 
   const filtered = jobs.filter(j =>
@@ -356,7 +398,7 @@ const JobMasterImport = () => {
             </div>
 
             <div className="job-card">
-              <form className="job-form">
+              <form className="job-form" onSubmit={(e) => e.preventDefault()}>
 
                 {/* STEP 1: MAIN JOB FORM */}
                 {currentStep === 1 && (
@@ -368,7 +410,7 @@ const JobMasterImport = () => {
                         <div className="input-group">
                           <label>Job Num <span className="required">*</span></label>
                           <input value={formData.jobNum} readOnly disabled style={{ backgroundColor: '#f1f5f9', fontWeight: 'bold', color: '#1e40af' }} />
-                          <small style={{ color: '#64748b' }}>Auto-generated: HBL/IMP/001</small>
+                          <small style={{ color: '#64748b' }}>Auto-generated</small>
                         </div>
                         <div className="input-group">
                           <label>Job Date <span className="required">*</span></label>
@@ -402,11 +444,22 @@ const JobMasterImport = () => {
                       <div className="form-grid">
                         <div className="input-group" style={{ position: 'relative' }}>
                           <label>Vessel <span className="required">*</span></label>
-                          <input type="text" value={vesselSearch} onChange={(e) => { setVesselSearch(e.target.value); setShowVesselDropdown(true); }} onFocus={() => setShowVesselDropdown(true)} placeholder="Type vessel code or name..." disabled={loading} />
+                          <input
+                            type="text"
+                            value={vesselSearch}
+                            onChange={(e) => { setVesselSearch(e.target.value); setShowVesselDropdown(true); }}
+                            onFocus={() => setShowVesselDropdown(true)}
+                            placeholder="Type vessel code or name..."
+                            disabled={loading}
+                          />
                           {showVesselDropdown && filteredVessels.length > 0 && (
                             <div className="autocomplete-dropdown">
                               {filteredVessels.map(vessel => (
-                                <div key={vessel._id} className="autocomplete-item" onClick={() => handleVesselSelect(vessel)}>
+                                <div
+                                  key={vessel._id}
+                                  className="autocomplete-item"
+                                  onClick={() => handleVesselSelect(vessel)}
+                                >
                                   <strong>{vessel.code}</strong> — {vessel.name}
                                   {vessel.country && <span style={{ marginLeft: '8px', color: '#64748b' }}>• {vessel.country}</span>}
                                 </div>
@@ -482,7 +535,7 @@ const JobMasterImport = () => {
                                 .map(agent => (
                                   <div key={agent._id} className="autocomplete-item" onClick={() => handleOriginAgentSelect(agent)}>
                                     <strong>{agent.code}</strong> — {agent.name}
-                                    <span style={{ marginLeft: '12px', padding: '2px 10px', borderRadius: '12px', fontSize: '0.75rem', backgroundColor: agent.type === 'customer' ? '#d1fae5' : '#fee2e2', color: agent.type === 'customer' ? '#059669' : '#dc2626' }}>
+                                    <span style={{ marginLeft: '12px', padding: '2px 10px', borderRadius: '12px', fontSize: '0.75rem' }}>
                                       {agent.type.toUpperCase()}
                                     </span>
                                   </div>
@@ -506,7 +559,7 @@ const JobMasterImport = () => {
                                 .map(carrier => (
                                   <div key={carrier._id} className="autocomplete-item" onClick={() => handleCarrierSelect(carrier)}>
                                     <strong>{carrier.code}</strong> — {carrier.name}
-                                    <span style={{ marginLeft: '12px', padding: '2px 10px', borderRadius: '12px', fontSize: '0.75rem', backgroundColor: carrier.type === 'customer' ? '#dbeafe' : '#fecaca', color: carrier.type === 'customer' ? '#1d4ed8' : '#991b1b' }}>
+                                    <span style={{ marginLeft: '12px', padding: '2px 10px', borderRadius: '12px', fontSize: '0.75rem' }}>
                                       {carrier.type.toUpperCase()}
                                     </span>
                                   </div>
@@ -530,7 +583,7 @@ const JobMasterImport = () => {
                                 .map(agent => (
                                   <div key={agent._id} className="autocomplete-item" onClick={() => handleShipAgentSelect(agent)}>
                                     <strong>{agent.code}</strong> — {agent.name}
-                                    <span style={{ marginLeft: '12px', padding: '2px 10px', borderRadius: '12px', fontSize: '0.75rem', backgroundColor: agent.type === 'customer' ? '#e0e7ff' : '#fce7f3', color: agent.type === 'customer' ? '#4338ca' : '#be123c' }}>
+                                    <span style={{ marginLeft: '12px', padding: '2px 10px', borderRadius: '12px', fontSize: '0.75rem' }}>
                                       {agent.type.toUpperCase()}
                                     </span>
                                   </div>
@@ -559,7 +612,7 @@ const JobMasterImport = () => {
                                 .map(cust => (
                                   <div key={cust._id} className="autocomplete-item" onClick={() => handlePrincipleCustomerSelect(cust)}>
                                     <strong>{cust.code}</strong> — {cust.name}
-                                    <span style={{ marginLeft: '12px', padding: '2px 10px', borderRadius: '12px', fontSize: '0.75rem', backgroundColor: cust.type === 'customer' ? '#d1fae5' : '#fee2e2', color: cust.type === 'customer' ? '#059669' : '#dc2626' }}>
+                                    <span style={{ marginLeft: '12px', padding: '2px 10px', borderRadius: '12px', fontSize: '0.75rem' }}>
                                       {cust.type.toUpperCase()}
                                     </span>
                                   </div>
@@ -582,7 +635,7 @@ const JobMasterImport = () => {
                                 .map(agent => (
                                   <div key={agent._id} className="autocomplete-item" onClick={() => handleLocalAgentSelect(agent)}>
                                     <strong>{agent.code}</strong> — {agent.name}
-                                    <span style={{ marginLeft: '12px', padding: '2px 10px', borderRadius: '12px', fontSize: '0.75rem', backgroundColor: agent.type === 'customer' ? '#dbeafe' : '#fecaca', color: agent.type === 'customer' ? '#1d4ed8' : '#991b1b' }}>
+                                    <span style={{ marginLeft: '12px', padding: '2px 10px', borderRadius: '12px', fontSize: '0.75rem' }}>
                                       {agent.type.toUpperCase()}
                                     </span>
                                   </div>
@@ -688,89 +741,21 @@ const JobMasterImport = () => {
                         Edit Existing
                       </button>
                       <div style={{ flex: 1 }}></div>
-                      <button type="button" className="btn-primary" onClick={() => setCurrentStep(2)}>
+                      <button type="button" className="btn-primary" onClick={handleStep1Next}>
                         Next: Port of Loading →
                       </button>
                     </div>
                   </>
                 )}
 
-                {/* STEP 2: PORT OF LOADING */}
+                {/* STEP 2: PORT OF LOADING (external component) */}
                 {currentStep === 2 && (
-                  <div className="section">
-                    <h3>Port of Loading Information</h3>
-                    <div className="form-grid">
-                      <div className="input-group" style={{ position: 'relative' }}>
-                        <label>Port of Loading <span className="required">*</span></label>
-                        <input
-                          type="text"
-                          value={portOfLoadingSearch}
-                          onChange={(e) => {
-                            setPortOfLoadingSearch(e.target.value);
-                            setShowPortOfLoadingDropdown(true);
-                          }}
-                          onFocus={() => setShowPortOfLoadingDropdown(true)}
-                          placeholder="Type port code or name..."
-                          disabled={loading}
-                        />
-                        {showPortOfLoadingDropdown && (
-                          <div className="autocomplete-dropdown">
-                            {seaDestinations
-                              .filter(p => 
-                                p.code.toLowerCase().includes(portOfLoadingSearch.toLowerCase()) ||
-                                p.name.toLowerCase().includes(portOfLoadingSearch.toLowerCase())
-                              )
-                              .map(port => (
-                                <div
-                                  key={port._id}
-                                  className="autocomplete-item"
-                                  onClick={() => handlePortOfLoadingSelect(port)}
-                                >
-                                  <strong>{port.code}</strong> — {port.name}
-                                </div>
-                              ))
-                            }
-                            {showPortOfLoadingDropdown && seaDestinations.filter(p =>
-                              p.code.toLowerCase().includes(portOfLoadingSearch.toLowerCase()) ||
-                              p.name.toLowerCase().includes(portOfLoadingSearch.toLowerCase())
-                            ).length === 0 && (
-                              <div className="autocomplete-item no-result">No port found</div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="input-group">
-                        <label>Port of Loading Name</label>
-                        <input 
-                          value={formData.portOfLoadingName} 
-                          readOnly 
-                          disabled 
-                          style={{ backgroundColor: '#ecfdf5', color: '#065f46', fontWeight: '600' }} 
-                        />
-                      </div>
-
-                      <div className="input-group">
-                        <label>MBL Number <span className="required">*</span></label>
-                        <input
-                          name="mblNumber"
-                          value={formData.mblNumber}
-                          onChange={handleChange}
-                          placeholder="e.g. SIN123456789"
-                          disabled={loading}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="form-actions">
-                      <button type="button" className="btn-secondary" onClick={() => setCurrentStep(1)}>
-                        ← Previous
-                      </button>
-                      <button type="button" className="btn-primary" onClick={handleFinalSave}>
-                        Save Job
-                      </button>
-                    </div>
-                  </div>
+                  <PortOfLoadingInfo
+                    formData={formData}
+                    setFormData={setFormData}
+                    onPrevious={() => setCurrentStep(1)}
+                    onNext={handleFinalSave}
+                  />
                 )}
               </form>
 
@@ -803,7 +788,7 @@ const JobMasterImport = () => {
                           <td>{job.portOfLoadingName || '-'}</td>
                           <td>{job.mblNumber || '-'}</td>
                           <td>{job.status}</td>
-                          <td>{new Date(job.createdAt).toLocaleDateString()}</td>
+                          <td>{job.createdAt ? new Date(job.createdAt).toLocaleDateString() : '-'}</td>
                         </tr>
                       ))}
                     </tbody>
