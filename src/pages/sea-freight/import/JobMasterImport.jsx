@@ -20,7 +20,6 @@ const JobMasterImport = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // 3-STEP WIZARD
   const [currentStep, setCurrentStep] = useState(1);
 
   const [currencies, setCurrencies] = useState([]);
@@ -95,7 +94,7 @@ const JobMasterImport = () => {
     portOfLoadingId: '',
     portOfLoadingName: '',
     mblNumber: '',
-    containers: [] // ← NEW: Will be filled in Step 3
+    containers: []
   };
 
   const [formData, setFormData] = useState(initialForm);
@@ -217,7 +216,6 @@ const JobMasterImport = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // === AUTO-SUGGEST HANDLERS ===
   const handleVesselSelect = (vessel) => {
     setFormData(prev => ({ ...prev, vesselId: vessel._id, vesselName: vessel.name }));
     setVesselSearch(`${vessel.code} - ${vessel.name}`);
@@ -276,7 +274,6 @@ const JobMasterImport = () => {
     `${v.code} ${v.name}`.toLowerCase().includes(vesselSearch.toLowerCase())
   );
 
-  // === STEP NAVIGATION ===
   const handleStep1Next = () => {
     if (!formData.vesselId || !formData.portDepartureId || !formData.portDischargeId) {
       toast.error('Vessel and Ports are required to continue');
@@ -293,7 +290,6 @@ const JobMasterImport = () => {
     setCurrentStep(3);
   };
 
-  // FINAL SAVE — Only after containers are added
   const handleFinalSave = async () => {
     if (!formData.containers || formData.containers.length === 0) {
       toast.error('Please add at least one container');
@@ -319,7 +315,6 @@ const JobMasterImport = () => {
       await fetchJobs();
       toast.success(isEditMode ? 'Job updated!' : 'Job created successfully!');
       
-      // Reset everything
       generateJobNumber();
       setFormData(initialForm);
       sessionStorage.removeItem(DRAFT_KEY);
@@ -378,10 +373,8 @@ const JobMasterImport = () => {
                     <div className="job-card">
               <form className="job-form" onSubmit={(e) => e.preventDefault()}>
 
-                {/* STEP 1: MAIN JOB FORM */}
                 {currentStep === 1 && (
                   <>
-                    {/* Job Information */}
                     <div className="section">
                       <h3>Job Information</h3>
                       <div className="form-grid">
@@ -401,7 +394,6 @@ const JobMasterImport = () => {
                       </div>
                     </div>
 
-                    {/* Job Category */}
                     <div className="section">
                       <h3>Job Category</h3>
                       <div className="form-grid">
@@ -416,7 +408,6 @@ const JobMasterImport = () => {
                       </div>
                     </div>
 
-                    {/* Vessel Information */}
                     <div className="section">
                       <h3>Vessel Information</h3>
                       <div className="form-grid">
@@ -457,11 +448,9 @@ const JobMasterImport = () => {
                       </div>
                     </div>
 
-                    {/* Loading Vessel */}
                     <div className="section">
                       <h3>Loading Vessel</h3>
                       <div className="form-grid">
-                        {/* Port of Departure */}
                         <div className="input-group" style={{ position: 'relative' }}>
                           <label>Port of Departure <span className="required">*</span></label>
                           <input type="text" value={portDepartureSearch} onChange={(e) => { setPortDepartureSearch(e.target.value); setShowPortDepartureDropdown(true); }} onFocus={() => setShowPortDepartureDropdown(true)} placeholder="Type port code or name..." disabled={loading} />
@@ -482,7 +471,6 @@ const JobMasterImport = () => {
                           <input value={formData.portDepartureName} readOnly disabled style={{ backgroundColor: '#f0fdf4', color: '#166534', fontWeight: '600' }} />
                         </div>
 
-                        {/* Port of Discharge */}
                         <div className="input-group" style={{ position: 'relative' }}>
                           <label>Port of Discharge <span className="required">*</span></label>
                           <input type="text" value={portDischargeSearch} onChange={(e) => { setPortDischargeSearch(e.target.value); setShowPortDischargeDropdown(true); }} onFocus={() => setShowPortDischargeDropdown(true)} placeholder="Type port code or name..." disabled={loading} />
@@ -503,7 +491,6 @@ const JobMasterImport = () => {
                           <input value={formData.portDischargeName} readOnly disabled style={{ backgroundColor: '#f0fdf4', color: '#166534', fontWeight: '600' }} />
                         </div>
 
-                        {/* Origin Agent */}
                         <div className="input-group" style={{ position: 'relative' }}>
                           <label>Origin Agent</label>
                           <input type="text" value={originAgentSearch} onChange={(e) => { setOriginAgentSearch(e.target.value); setShowOriginAgentDropdown(true); }} onFocus={() => setShowOriginAgentDropdown(true)} placeholder="Type code or name..." disabled={loading} />
@@ -726,7 +713,6 @@ const JobMasterImport = () => {
                   </>
                 )}
 
-                {/* STEP 2: PORT OF LOADING */}
                 {currentStep === 2 && (
                   <PortOfLoadingInfo
                     formData={formData}
@@ -736,7 +722,6 @@ const JobMasterImport = () => {
                   />
                 )}
 
-                {/* STEP 3: CONTAINER INFORMATION */}
                 {currentStep === 3 && (
                   <ContainerInfo
                     formData={formData}
@@ -747,7 +732,6 @@ const JobMasterImport = () => {
                 )}
               </form>
 
-              {/* Job Table */}
               <div className="job-table">
                 <h3>All Sea Import Jobs</h3>
                 {jobs.length === 0 ? (
