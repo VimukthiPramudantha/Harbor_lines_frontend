@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+// frontend/src/pages/sea-freight/import/JobMasterImport.jsx
+import { useState, useEffect } from 'react';
 import Sidebar from '../../../components/layout/Sidebar.jsx';
 import Navbar from '../../../components/layout/Navbar.jsx';
 import toast from 'react-hot-toast';
 import '../../../styles/JobMasterImport.css';
 import PortOfLoadingInfo from './PortOfLoadingInfo.jsx';
+import ContainerInfo from './ContainerInfo.jsx'; 
 
 const API_BASE = 'http://localhost:5000/api/jobs/sea-import';
 const DRAFT_KEY = 'importJobDraft_v1';
@@ -18,13 +20,15 @@ const JobMasterImport = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const [currentStep, setCurrentStep] = useState(1); 
+  // 3-STEP WIZARD
+  const [currentStep, setCurrentStep] = useState(1);
 
   const [currencies, setCurrencies] = useState([]);
   const [seaDestinations, setSeaDestinations] = useState([]);
   const [customerSuppliers, setCustomerSuppliers] = useState([]);
   const [vessels, setVessels] = useState([]);
 
+  // Auto-suggest states
   const [vesselSearch, setVesselSearch] = useState('');
   const [showVesselDropdown, setShowVesselDropdown] = useState(false);
 
@@ -90,7 +94,8 @@ const JobMasterImport = () => {
     impNo: '',
     portOfLoadingId: '',
     portOfLoadingName: '',
-    mblNumber: ''
+    mblNumber: '',
+    containers: [] // ← NEW: Will be filled in Step 3
   };
 
   const [formData, setFormData] = useState(initialForm);
@@ -267,41 +272,31 @@ const JobMasterImport = () => {
     setShowPortOfLoadingDropdown(false);
   };
 
-  // Define filteredVessels (fixes the blank page bug)
   const filteredVessels = vessels.filter(v =>
     `${v.code} ${v.name}`.toLowerCase().includes(vesselSearch.toLowerCase())
   );
 
-  // === STEP NAVIGATION & VALIDATION ===
+  // === STEP NAVIGATION ===
   const handleStep1Next = () => {
-    // Minimal validation for Step 1: require vessel, port departure, port discharge
-    if (!formData.vesselId) {
-      toast.error('Please select a Vessel before continuing.');
+    if (!formData.vesselId || !formData.portDepartureId || !formData.portDischargeId) {
+      toast.error('Vessel and Ports are required to continue');
       return;
     }
-    if (!formData.portDepartureId) {
-      toast.error('Please select Port of Departure before continuing.');
-      return;
-    }
-    if (!formData.portDischargeId) {
-      toast.error('Please select Port of Discharge before continuing.');
-      return;
-    }
-
-    // Save (already autosaved) but ensure sessionStorage has the latest
-    try {
-      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
-    } catch (err) {
-      console.warn('Could not save draft', err);
-    }
-
     setCurrentStep(2);
   };
 
-  // FINAL SAVE - Only called from Step 2
-  const handleFinalSave = async () => {
+  const handleStep2Next = () => {
     if (!formData.portOfLoadingId || !formData.mblNumber) {
       toast.error('Port of Loading and MBL Number are required!');
+      return;
+    }
+    setCurrentStep(3);
+  };
+
+  // FINAL SAVE — Only after containers are added
+  const handleFinalSave = async () => {
+    if (!formData.containers || formData.containers.length === 0) {
+      toast.error('Please add at least one container');
       return;
     }
 
@@ -316,17 +311,15 @@ const JobMasterImport = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-      if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(txt || 'Failed');
-      }
+
+      if (!res.ok) throw new Error('Save failed');
       const data = await res.json();
       if (!data.success) throw new Error(data.message || 'Failed');
 
       await fetchJobs();
       toast.success(isEditMode ? 'Job updated!' : 'Job created successfully!');
-
-      // Reset form & go back to Step 1
+      
+      // Reset everything
       generateJobNumber();
       setFormData(initialForm);
       sessionStorage.removeItem(DRAFT_KEY);
@@ -334,8 +327,7 @@ const JobMasterImport = () => {
       setIsEditMode(false);
       setEditingId(null);
     } catch (err) {
-      console.error(err);
-      toast.error('Failed to create/update job');
+      toast.error(err.message || 'Failed to save job');
     } finally {
       setLoading(false);
     }
@@ -348,9 +340,6 @@ const JobMasterImport = () => {
     setCurrentStep(1);
     setIsEditMode(false);
     setEditingId(null);
-    setVesselSearch('');
-    setPortDepartureSearch('');
-    setPortDischargeSearch('');
     toast.success('Form cleared');
   };
 
@@ -365,9 +354,8 @@ const JobMasterImport = () => {
     setIsEditMode(true);
     setEditingId(job._id);
     setShowEditModal(false);
-    toast.success('Job loaded for editing');
-    // set step to 1 so user can edit main data first
     setCurrentStep(1);
+    toast.success('Job loaded for editing');
   };
 
   const filtered = jobs.filter(j =>
@@ -387,17 +375,7 @@ const JobMasterImport = () => {
               <p className="page-subtitle">Create and manage sea import jobs</p>
             </div>
 
-            {/* WIZARD STEPS */}
-            <div className="wizard-steps">
-              <div className={`step-indicator ${currentStep === 1 ? 'active' : 'completed'}`}>
-                1. Job Details
-              </div>
-              <div className={`step-indicator ${currentStep === 2 ? 'active' : ''}`}>
-                2. Port of Loading
-              </div>
-            </div>
-
-            <div className="job-card">
+                    <div className="job-card">
               <form className="job-form" onSubmit={(e) => e.preventDefault()}>
 
                 {/* STEP 1: MAIN JOB FORM */}
@@ -742,19 +720,29 @@ const JobMasterImport = () => {
                       </button>
                       <div style={{ flex: 1 }}></div>
                       <button type="button" className="btn-primary" onClick={handleStep1Next}>
-                        Next: Port of Loading →
+                        Next: Port of Loading
                       </button>
                     </div>
                   </>
                 )}
 
-                {/* STEP 2: PORT OF LOADING (external component) */}
+                {/* STEP 2: PORT OF LOADING */}
                 {currentStep === 2 && (
                   <PortOfLoadingInfo
                     formData={formData}
                     setFormData={setFormData}
                     onPrevious={() => setCurrentStep(1)}
-                    onNext={handleFinalSave}
+                    onNext={handleStep2Next}
+                  />
+                )}
+
+                {/* STEP 3: CONTAINER INFORMATION */}
+                {currentStep === 3 && (
+                  <ContainerInfo
+                    formData={formData}
+                    setFormData={setFormData}
+                    onPrevious={() => setCurrentStep(2)}
+                    onSaveJob={handleFinalSave}
                   />
                 )}
               </form>
@@ -774,6 +762,7 @@ const JobMasterImport = () => {
                         <th>Voyage</th>
                         <th>Port of Loading</th>
                         <th>MBL</th>
+                        <th>Containers</th>
                         <th>Status</th>
                         <th>Added</th>
                       </tr>
@@ -787,8 +776,9 @@ const JobMasterImport = () => {
                           <td>{job.voyage}</td>
                           <td>{job.portOfLoadingName || '-'}</td>
                           <td>{job.mblNumber || '-'}</td>
+                          <td>{job.containers?.length || 0}</td>
                           <td>{job.status}</td>
-                          <td>{job.createdAt ? new Date(job.createdAt).toLocaleDateString() : '-'}</td>
+                          <td>{new Date(job.createdAt).toLocaleDateString()}</td>
                         </tr>
                       ))}
                     </tbody>
