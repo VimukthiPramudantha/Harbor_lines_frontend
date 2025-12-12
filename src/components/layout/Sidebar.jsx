@@ -12,7 +12,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [mastersOpen, setMastersOpen] = useState(false);
   const [freightOpen, setFreightOpen] = useState(false);
   const [seaJobsOpen, setSeaJobsOpen] = useState(false);
-  const [importOpen, setImportOpen] = useState(false); // ← NEW: Control Import dropdown
+  const [importOpen, setImportOpen] = useState(false); 
 
   const menuItems = [
     { name: "Dashboard", icon: "dashboard", path: "/dashboard" },
@@ -61,7 +61,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           icon: "input",
           isDropdown: true,
           isOpen: importOpen,
-          onToggle: () => setImportOpen(!importOpen), // ← NOW WORKS!
+          onToggle: () => setImportOpen(!importOpen), 
           subItems: [
             {
               name: "Job Master - Import",

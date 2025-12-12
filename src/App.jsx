@@ -19,6 +19,7 @@ import AirDestinationMaintenance from './pages/freight/AirDestinationMaintenance
 
 // === SEA FREIGHT IMPORT JOBS ===
 import JobMasterImport from './pages/sea-freight/import/JobMasterImport.jsx';
+import DeliveryOrder from './pages/sea-freight/import/delivery-order/DeliveryOrder.jsx';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -90,6 +91,9 @@ function App() {
         <Route path="/sea-freight/import/job-master" element={
           <ProtectedRoute><JobMasterImport /></ProtectedRoute>
         } />
+        <Route path="/sea-freight/import/delivery-order" element={
+          <ProtectedRoute><DeliveryOrder /></ProtectedRoute>
+          } />
 
         {/* Catch-all fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
