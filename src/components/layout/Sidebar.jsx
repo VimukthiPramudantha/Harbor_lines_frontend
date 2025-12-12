@@ -12,6 +12,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [mastersOpen, setMastersOpen] = useState(false);
   const [freightOpen, setFreightOpen] = useState(false);
   const [seaJobsOpen, setSeaJobsOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false); // ← NEW: Control Import dropdown
 
   const menuItems = [
     { name: "Dashboard", icon: "dashboard", path: "/dashboard" },
@@ -59,18 +60,22 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           name: "Import",
           icon: "input",
           isDropdown: true,
-          isOpen: seaJobsOpen,
-          onToggle: () => {}, // no action needed
+          isOpen: importOpen,
+          onToggle: () => setImportOpen(!importOpen), // ← NOW WORKS!
           subItems: [
             {
               name: "Job Master - Import",
               path: "/sea-freight/import/job-master",
               icon: "note_add"
+            },
+            {
+              name: "Delivery Order",
+              path: "/sea-freight/import/delivery-order",
+              icon: "local_shipping"
             }
-            // Add more import pages here later
           ]
         }
-        // Export will be added later
+        // Export can be added later
       ]
     },
 
@@ -79,11 +84,14 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { name: "Settings", icon: "settings", path: "/settings" },
   ];
 
-  // Auto-open dropdowns based on current path
+  // Auto-open correct dropdowns based on current path
   useEffect(() => {
     if (location.pathname.startsWith("/masters/")) setMastersOpen(true);
     if (location.pathname.startsWith("/freight/")) setFreightOpen(true);
-    if (location.pathname.startsWith("/sea-freight/")) setSeaJobsOpen(true);
+    if (location.pathname.startsWith("/sea-freight/")) {
+      setSeaJobsOpen(true);
+      if (location.pathname.includes("/import/")) setImportOpen(true);
+    }
   }, [location.pathname]);
 
   // Click outside to close sidebar
@@ -188,7 +196,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                       </NavLink>
                     )}
 
-                    {/* Nested submenu for Import */}
                     {sub.isDropdown && sub.isOpen && isOpen && (
                       <div className="nested-submenu">
                         {sub.subItems.map((nested) => (
