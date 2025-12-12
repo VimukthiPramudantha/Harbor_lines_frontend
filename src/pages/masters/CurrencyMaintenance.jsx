@@ -337,7 +337,6 @@ const CurrencyMaintenance = () => {
         </div>
       </div>
 
-      {/* Edit Modal */}
       {showEditModal && (
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
