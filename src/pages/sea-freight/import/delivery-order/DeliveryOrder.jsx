@@ -77,7 +77,7 @@ const DeliveryOrder = () => {
       vesselName: job.vesselName || '',
       voyage: job.voyage || '',
       fclLcl: job.cargoCategory === 'FCL' ? 'FCL' : 'LCL',
-      doNum: ''
+      doNum: '',
       doType: 'Custom Copy',
       numContainers: job.containers?.length || job.numContainers || '',
       deStuffRequired: false 
