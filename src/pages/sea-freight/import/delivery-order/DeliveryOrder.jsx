@@ -32,7 +32,8 @@ const DeliveryOrder = () => {
     fclLcl: 'FCL',
     doNum: '',
     doType: 'Custom Copy',
-    numContainers: ''
+    numContainers: '',
+    deStuffRequired: false
   });
 
   const doTypes = ['Custom Copy', 'SLPA 1', 'SLPA 2', 'SLPA 3'];
@@ -76,9 +77,10 @@ const DeliveryOrder = () => {
       vesselName: job.vesselName || '',
       voyage: job.voyage || '',
       fclLcl: job.cargoCategory === 'FCL' ? 'FCL' : 'LCL',
-      doNum: '', // Will be auto-generated later
+      doNum: ''
       doType: 'Custom Copy',
-      numContainers: job.containers?.length || job.numContainers || ''
+      numContainers: job.containers?.length || job.numContainers || '',
+      deStuffRequired: false 
     });
     setJobSearch(`${job.jobNum} — ${job.vesselName} (${job.voyage})`);
     setShowJobDropdown(false);
@@ -93,8 +95,11 @@ const DeliveryOrder = () => {
   );
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
 
   const handleNext = () => {
@@ -178,8 +183,8 @@ const DeliveryOrder = () => {
                                 <span style={{ color: '#3b82f6' }}>{job.vesselName}</span>
                               </div>
                               <div style={{ fontSize: '0.9rem', color: '#64748b', marginTop: '4px' }}>
-                                Voyage: {job.voyage} • MBL: {job.mblNumber || '—'} • 
-                                POL: {job.portOfLoadingName || '—'} • 
+                                Voyage: {job.voyage} • MBL: {job.mblNumber || '—'} •
+                                POL: {job.portOfLoadingName || '—'} •
                                 Containers: {job.containers?.length || 0}
                               </div>
                             </div>
@@ -191,7 +196,6 @@ const DeliveryOrder = () => {
 
                   {selectedJob && (
                     <div className="form-grid">
-
                       <div className="input-group">
                         <label>Job Number</label>
                         <input value={formData.jobNum} readOnly disabled style={{ backgroundColor: '#f0fdf4', fontWeight: 'bold', color: '#166534' }} />
@@ -265,6 +269,44 @@ const DeliveryOrder = () => {
                       <div className="input-group">
                         <label>No. of Containers</label>
                         <input value={formData.numContainers} readOnly disabled style={{ backgroundColor: '#ecfdf5', fontWeight: '600' }} />
+                      </div>
+
+                      <div className="input-group" style={{ gridColumn: '1 / -1' }}>
+                        <label style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '14px',
+                          fontSize: '1.15rem',
+                          fontWeight: '600',
+                          color: formData.deStuffRequired ? '#dc2626' : '#1e293b',
+                          marginTop: '1.5rem'
+                        }}>
+                          <input
+                            type="checkbox"
+                            name="deStuffRequired"
+                            checked={formData.deStuffRequired}
+                            onChange={handleChange}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              accentColor: '#dc2626',
+                              cursor: 'pointer'
+                            }}
+                          />
+                          <div>
+                            De-Stuff Required
+                            {formData.deStuffRequired && (
+                              <span style={{ marginLeft: '10px', fontSize: '0.9rem', color: '#991b1b' }}>
+                                (Containers will be emptied)
+                              </span>
+                            )}
+                          </div>
+                        </label>
+                        {!formData.deStuffRequired && (
+                          <small style={{ color: '#64748b', marginLeft: '42px' }}>
+                            Default: Direct delivery
+                          </small>
+                        )}
                       </div>
 
                     </div>
