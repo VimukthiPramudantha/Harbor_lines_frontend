@@ -78,7 +78,6 @@ const CurrencyMaintenance = () => {
     }));
   };
 
-  // ✓ Helper to detect if form is empty
   const isFormEmpty = () => {
     return (
       formData.code.trim() === "" &&
@@ -89,7 +88,6 @@ const CurrencyMaintenance = () => {
     );
   };
 
-  // ✓ Updated Cancel Logic (Clear → Redirect)
   const handleCancel = () => {
     if (!isFormEmpty()) {
       // First press → clear form
@@ -104,7 +102,6 @@ const CurrencyMaintenance = () => {
       setEditingId(null);
       toast.success("Form cleared");
     } else {
-      // Second press → navigate
       toast.success("Cancel successful");
       navigate("/dashboard");
     }

@@ -42,7 +42,6 @@ const BankMaintenance = () => {
     glAccountName: "",
   });
 
-  // ✔ Check if form is empty
   const isFormEmpty = () => {
     return Object.values(formData).every((v) => v === "" || v === false);
   };
